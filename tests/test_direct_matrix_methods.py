@@ -25,6 +25,16 @@ def test_is_spd_false():
     assert r is False
 
 
+def test_hessenberg_matrix_entries():
+    A = np.array([[4, 2, 4, 3],
+                  [1, -3, -6, -1],
+                  [0, 3, 5, 8],
+                  [0, 0, 1, 3]])
+    n, _ = A.shape
+    r = dmm.hessenberg_matrix_entries(n)
+    assert r == 3.0
+
+
 def test_back_substitution():
     A = np.array([[2, -4, 6],
               [0, 2, -2],
@@ -49,6 +59,38 @@ def test_cholesky_decomposition():
               [1, 1, 2]], dtype=float)
     my_decomp = dmm.cholesky_decomposition(A)
     numpy_decomp = np.linalg.cholesky(A)
-    print(my_decomp)
-    print(numpy_decomp)
     assert np.allclose(my_decomp, numpy_decomp)
+
+
+def test_efficient_cholesky():
+    A = np.array([[3, -1, 1],
+              [-1, 3, 1],
+              [1, 1, 2]], dtype=float)
+    my_decomp = dmm.efficient_cholesky(A)
+    numpy_decomp = np.linalg.cholesky(A)
+    assert np.allclose(my_decomp, numpy_decomp)
+
+
+def test_gaussian_elimination():
+    A = np.array([[1, -1, 3],
+                  [1, 1, 0],
+                  [3, -2, 1]], dtype=float)
+    b = np.array([[2], [4], [1]], dtype=float)
+    r_A, r_b = dmm.gaussian_elimination(A, b)
+    comparison_A = np.array([[1, -1, 3],
+                             [0, 2, -3],
+                             [0, 0, -6.5]])
+    comparison_b = np.array([[2], [2], [-6]])
+    assert np.array_equal(r_A, comparison_A)
+    assert np.array_equal(r_b, comparison_b)
+
+
+def test_gauss_backsub():
+    A = np.array([[1, -1, 3],
+                [1, 1, 0],
+                [3, -2, 1]], dtype=float)
+    b = np.array([[2], [4], [1]], dtype=float)
+    r_A, r_b = dmm.gaussian_elimination(A, b)
+    my_x = dmm.back_substitution(r_A, r_b)
+    np_x = np.linalg.solve(r_A, r_b)
+    assert np.allclose(my_x, np_x)
