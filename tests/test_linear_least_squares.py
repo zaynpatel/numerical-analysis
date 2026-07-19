@@ -27,9 +27,12 @@ def test_householder_reflections():
     assert np.allclose(A, Q @ R)
     assert Q.shape == (A.shape)
 
-def test_householder_reflections():
-    A = np.array([[3, 2, 1, 4],
-                  [9, 1, 4, 2],
-                  [5, 8, 1, 0]], dtype=float)
+def test_householder_reflections_m_over_n():
+    A = np.array([[3, 2, 1],
+                  [9, 1, 4],
+                  [5, 8, 1],
+                  [1, 1, 4]], dtype=float)
     Q, R = lls.householder_reflections(A)
     assert np.allclose(A, Q @ R)
+    m, _ = A.shape
+    assert Q.shape == (m, m)
