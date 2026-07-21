@@ -27,6 +27,7 @@ def test_householder_reflections():
     assert np.allclose(A, Q @ R)
     assert Q.shape == (A.shape)
 
+
 def test_householder_reflections_m_over_n():
     A = np.array([[3, 2, 1],
                   [9, 1, 4],
@@ -36,3 +37,27 @@ def test_householder_reflections_m_over_n():
     assert np.allclose(A, Q @ R)
     m, _ = A.shape
     assert Q.shape == (m, m)
+
+
+def test_givens_rotations_first():
+    A = np.array([[1, -1],
+                  [0, 2],
+                  [1, 1]], dtype=float)
+    Q, R = lls.givens_rotations(A)
+    assert np.allclose(A, Q @ R)
+    m, _ = A.shape
+    assert Q.shape == (m, m)
+
+
+def test_givens_rotations_second():
+    A = np.array([[3, 1],
+                  [2, 5],
+                  [8, 2]], dtype=float)
+    Q, R = lls.givens_rotations(A)
+    assert np.allclose(A, Q @ R)
+    print(Q)
+    print(R)
+
+    m, _ = A.shape
+    assert Q.shape == (m, m)
+    assert False

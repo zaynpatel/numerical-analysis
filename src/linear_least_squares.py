@@ -73,7 +73,7 @@ def householder_reflections(A: npt.NDArray):
 
     :param A: Matrix A
     :type A: np.array
-    :return: Orthogonal matrix Q with orthonormal columns and a triangular matrix R with scalar projection lengths
+    :return: Orthogonal matrix Q with orthonormal columns and an upper triangular matrix R
     """
     A = A.copy()  # This gets overwritten to become R
     m, n = A.shape
@@ -91,4 +91,52 @@ def householder_reflections(A: npt.NDArray):
     p = min(m, n)
     for i in range(p - 1, -1, - 1):
         Q = Q - (2 * v[:, [i]] @ (v[:, [i]].T @ Q))
+    return Q, A
+
+
+def calculate_givens_matrix(column_index: int, row_index: int, matrix: npt.NDArray):
+    """
+    Helper function for `givens_rotations` to calculate G given the current state of a matrix
+
+    :param column_index: Index of the current column
+    :type column_index: int
+    :param row_index: Index of the current row
+    :type row_index: int
+    :param matrix: "In process" matrix A with Givens transformations applied
+    :type matrix: np.array
+    """
+    m, n = matrix.shape
+    i = column_index
+    k = row_index
+    G = np.identity(m)
+
+    c = matrix[column_index, i] / (np.sqrt((matrix[column_index, i]  ** 2) + (matrix[k, column_index] ** 2)))
+    s = - (matrix[k, column_index] / (np.sqrt((matrix[column_index, i] ** 2) + (matrix[k, column_index] ** 2))))
+    s_negative = - s
+    G[i, i] = c
+    G[i, k] = s_negative
+    G[k, i] = s
+    G[k, k] = c
+
+    return G
+
+
+def givens_rotations(A: npt.NDArray):
+    """
+    Computes A = QR by Givens rotations
+
+    :param A: Matrix A
+    :type A: np.array
+    :return: Orthogonal matrix Q with orthonormal columns and an upper triangular matrix R
+    """
+    A = A.copy()  # This will turn into R
+    m, n = A.shape
+    Q = np.identity(m)
+    for col_idx in range(n):
+        for row_idx in range(m - 1, -1, -1):
+            if row_idx > col_idx and A[row_idx, col_idx] != 0:
+                givens_rotation = calculate_givens_matrix(column_index=col_idx, row_index=row_idx, matrix=A)
+                A = givens_rotation.T @ A
+                Q = Q @ givens_rotation
+    A[np.abs(A) <= 1e-14] = 0.0
     return Q, A
