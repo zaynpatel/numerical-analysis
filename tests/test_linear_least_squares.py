@@ -50,14 +50,10 @@ def test_givens_rotations_first():
 
 
 def test_givens_rotations_second():
-    A = np.array([[3, 1],
-                  [2, 5],
-                  [8, 2]], dtype=float)
+    A = np.array([[0, -1, 1],
+                  [4, 2, 0],
+                  [3, 4, 0]], dtype=float)
     Q, R = lls.givens_rotations(A)
     assert np.allclose(A, Q @ R)
-    print(Q)
-    print(R)
-
     m, _ = A.shape
     assert Q.shape == (m, m)
-    assert False

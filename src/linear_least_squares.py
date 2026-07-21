@@ -136,7 +136,7 @@ def givens_rotations(A: npt.NDArray):
         for row_idx in range(m - 1, -1, -1):
             if row_idx > col_idx and A[row_idx, col_idx] != 0:
                 givens_rotation = calculate_givens_matrix(column_index=col_idx, row_index=row_idx, matrix=A)
-                A = givens_rotation.T @ A
-                Q = Q @ givens_rotation
+                A = givens_rotation @ A
+                Q = Q @ givens_rotation.T
     A[np.abs(A) <= 1e-14] = 0.0
     return Q, A
