@@ -1,5 +1,6 @@
 import numpy as np
 
+from src import direct_matrix_methods as dmm
 from src import linear_least_squares as lls
 
 
@@ -47,6 +48,7 @@ def test_givens_rotations_first():
     assert np.allclose(A, Q @ R)
     m, _ = A.shape
     assert Q.shape == (m, m)
+    assert dmm.confirm_upper_triangular(R) == True
 
 
 def test_givens_rotations_second():
@@ -57,3 +59,16 @@ def test_givens_rotations_second():
     assert np.allclose(A, Q @ R)
     m, _ = A.shape
     assert Q.shape == (m, m)
+    assert dmm.confirm_upper_triangular(R) == True
+
+
+def test_givens_rotations_third():
+    A = np.array([[5, 6, 2, 9],
+                  [9, 1, 4, 8],
+                  [8, 3, 2, 6],
+                  [1, 4, 2, 3]])
+    Q, R = lls.givens_rotations(A)
+    assert np.allclose(A, Q @ R)
+    m, _ = A.shape
+    assert Q.shape == (m, m)
+    assert dmm.confirm_upper_triangular(R) == True

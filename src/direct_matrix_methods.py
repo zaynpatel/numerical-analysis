@@ -18,6 +18,22 @@ def confirm_column_vector(b: npt.NDArray):
             raise Exception("b is not properly formatted as a column vector")
         
 
+def confirm_upper_triangular(A: npt.NDArray):
+    """Confirm a matrix is upper triangular
+
+    :param A: Matrix to confirm upper-triangularness
+    :type A: np.array
+    :return: True if upper triangular, False if not upper triangular
+
+    TODO: Consider how this can be implemented more efficiently
+    """
+    for row_number, column in enumerate(A):
+        for column_number, _ in enumerate(column):
+            if row_number > column_number and A[row_number, column_number] != 0:
+                return False
+    return True
+
+
 def export_lower_triangular(A: npt.NDArray):
     """Returns the original matrix A with only the lower triangular portion and the other entries are zero"""
     for row_number, column in enumerate(A):

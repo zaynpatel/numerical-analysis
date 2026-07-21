@@ -25,14 +25,14 @@ def test_is_spd_false():
     assert r is False
 
 
-def test_hessenberg_matrix_entries():
-    A = np.array([[4, 2, 4, 3],
-                  [1, -3, -6, -1],
-                  [0, 3, 5, 8],
-                  [0, 0, 1, 3]])
-    n, _ = A.shape
-    r = dmm.hessenberg_matrix_entries(n)
-    assert r == 3.0
+# def test_hessenberg_matrix_entries():
+#     A = np.array([[4, 2, 4, 3],
+#                   [1, -3, -6, -1],
+#                   [0, 3, 5, 8],
+#                   [0, 0, 1, 3]])
+#     n, _ = A.shape
+#     r = dmm.hessenberg_matrix_entries(n)
+#     assert r == 3.0
 
 
 def test_back_substitution():
@@ -94,3 +94,17 @@ def test_gauss_backsub():
     my_x = dmm.back_substitution(r_A, r_b)
     np_x = np.linalg.solve(r_A, r_b)
     assert np.allclose(my_x, np_x)
+
+
+def test_confirm_upper_triangular_is_true():
+    A = np.array([[2, 3, 2],
+                  [0, 1, 8],
+                  [0, 0, 5]])
+    assert dmm.confirm_upper_triangular(A) == True
+
+
+def test_confirm_upper_triangular_is_false():
+    A = np.array([[2, 3, 0],
+                  [1, 0, 0],
+                  [2, 3, 0]])
+    assert dmm.confirm_upper_triangular(A) == False

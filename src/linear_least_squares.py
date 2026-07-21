@@ -128,6 +128,9 @@ def givens_rotations(A: npt.NDArray):
     :param A: Matrix A
     :type A: np.array
     :return: Orthogonal matrix Q with orthonormal columns and an upper triangular matrix R
+
+    Note: It is not encouraged to compare the results of GS, Householder, and Givens since the QR factorization
+    is not unqiue and each decomposition technique uses a different process to obtain QR.
     """
     A = A.copy()  # This will turn into R
     m, n = A.shape
