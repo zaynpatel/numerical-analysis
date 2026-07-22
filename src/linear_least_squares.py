@@ -3,6 +3,8 @@
 import numpy as np
 import numpy.typing as npt
 
+from src import direct_matrix_methods as dmm
+
 def classical_gram_schmidt(A: npt.NDArray):
     """
     Computes A = QR by performing classical Gram-Schmidt (CGS)
@@ -73,7 +75,10 @@ def householder_reflections(A: npt.NDArray):
 
     :param A: Matrix A
     :type A: np.array
-    :return: Orthogonal matrix Q with orthonormal columns and an upper triangular matrix R
+    :return Q, R, v: Orthogonal matrix Q with orthonormal columns, upper triangular matrix R, and matrix of reflectors v
+
+    Note: This returns a full QR decomposition (as opposed to reduced QR). The dimensions of the full
+    decomposition are: A = m x n, Q = m x m, R = m x n.
     """
     A = A.copy()  # This gets overwritten to become R
     m, n = A.shape
@@ -91,7 +96,7 @@ def householder_reflections(A: npt.NDArray):
     p = min(m, n)
     for i in range(p - 1, -1, - 1):
         Q = Q - (2 * v[:, [i]] @ (v[:, [i]].T @ Q))
-    return Q, A
+    return Q, A, v
 
 
 def calculate_givens_matrix(column_index: int, row_index: int, matrix: npt.NDArray):
@@ -143,3 +148,41 @@ def givens_rotations(A: npt.NDArray):
                 Q = Q @ givens_rotation.T
     A[np.abs(A) <= 1e-14] = 0.0
     return Q, A
+
+
+def least_squares_calculation(A: npt.NDArray, b: npt.NDArray, implicit=True):
+    """
+    Computes the solution to a least squares problem
+
+    :param A: Matrix A (overdetermined) to perform least squares on
+    :type A: np.array
+    :param b: Column vector b
+    :type b: np.array
+    :param implicit: Boolean flag that specifies whether to compute Q implicitly by (2) or construct Q via (1)
+    :type implicit: bool
+    :return: If implicit=True x, Q, R are returned (x is the solution vector); if implicit=False then only x is returned
+
+    There are two ways the solution can be computed:
+    (1) With an explicit Q
+    (2) Using the reflectors from the Householder transformation to implicitly construct Q and apply it to b
+
+    Q is a dense matrix since most/all of its entries are non-zero so it is not recommended to use (1). But for pedagogical purposes
+    it can be useful to see Q or at least be aware that the normal equations simplify to Rx = Q.T @ b and confirm this answer with the
+    implicit one in (2).
+    """
+    dmm.confirm_column_vector(b)
+    Q, R, v = householder_reflections(A)
+    q_m, q_n = Q.shape
+    _, r_n = R.shape
+    v_m, v_n = v.shape
+    if not implicit:
+        new_b = Q.T @ b
+        square_R = R[:r_n, :r_n]
+        x = dmm.back_substitution(square_R, new_b[:r_n])
+        return x, Q, R
+
+    for k in range(v_n):
+        b[k:q_m] = b[k:q_m] - (2 * v[k:v_m, [k]] @ (v[k:v_m, [k]].T @ b[k:v_m]))
+    square_R = R[:r_n, :r_n]
+    x = dmm.back_substitution(square_R, b[:r_n])
+    return x

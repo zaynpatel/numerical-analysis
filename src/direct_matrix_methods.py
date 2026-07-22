@@ -55,12 +55,17 @@ def is_spd(A: npt.NDArray) -> bool:
 
 
 def hessenberg_matrix_entries(n: int) -> int:
-    """Computes the number of zero entries in an upper Hessenberg matrix
-    
-    Add explanation and reason for the closed-form formula b/c of sum of triangular numbers
+    """
+    Computes the number of zero entries in an upper Hessenberg matrix
+
+    :param n: Dimension of Hessenberg matrix (Hessenberg matrices are square)
+    :type n: int
+
+    The formula adds the number of triangular numbers (which counts the upper triangular elements)
+    to the number of elements in the first subdiagonal.
     """
     total = n ** 2
-    non_zero = (n * (n + 1) / 2) - (n - 1)
+    non_zero = (n * (n + 1) / 2) + (n - 1)
     zero = total - non_zero
     return zero
 
@@ -82,6 +87,8 @@ def back_substitution(A: npt.NDArray, b: npt.NDArray):
     
     confirm_column_vector(b)
     _, n = A.shape
+    if A.shape != (n, n):
+        raise NotImplementedError("`back_substitution` does not currently work for non-square matrices")
     x = np.zeros((len(b), 1))
     vn, _ = x.shape
     x[vn - 1] = (b[vn -1] / A[vn -1][vn -1])

@@ -25,14 +25,14 @@ def test_is_spd_false():
     assert r is False
 
 
-# def test_hessenberg_matrix_entries():
-#     A = np.array([[4, 2, 4, 3],
-#                   [1, -3, -6, -1],
-#                   [0, 3, 5, 8],
-#                   [0, 0, 1, 3]])
-#     n, _ = A.shape
-#     r = dmm.hessenberg_matrix_entries(n)
-#     assert r == 3.0
+def test_hessenberg_matrix_entries():
+    A = np.array([[4, 2, 4, 3],
+                  [1, -3, -6, -1],
+                  [0, 3, 5, 8],
+                  [0, 0, 1, 3]])
+    n, _ = A.shape
+    r = dmm.hessenberg_matrix_entries(n)
+    assert r == 3.0
 
 
 def test_back_substitution():
