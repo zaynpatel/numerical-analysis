@@ -77,19 +77,17 @@ def jacobi_method(A: npt.NDArray, b: npt.NDArray, tol=1e-15) -> npt.NDArray:
 
     M = np.diag(np.diag(A))
     x = np.zeros((n, 1))
-    x_prev = np.zeros((n, 1))
 
     T = np.identity(n) - (np.linalg.inv(M) @ A)  # flops?
     T_norm = spectral_radius(T)
     computed_difference = 100
     while computed_difference >= tol:
-        print(computed_difference)
+        x_k = x.copy()
         for row_idx in range(n):
             mul_store = []
             for col_idx in range(n):
                 if row_idx != col_idx:
-                    mul_store.append(A[row_idx, col_idx] * x[row_idx])
-            x_prev[row_idx, 0] = x[row_idx, 0]
+                    mul_store.append(A[row_idx, col_idx] * x_k[col_idx])
             x[row_idx, 0] = (b[row_idx, 0] - (np.sum(mul_store))) / A[row_idx, row_idx]
-        computed_difference = np.float64((T_norm / (1 - T_norm)) * np.linalg.norm(x - x_prev))
+        computed_difference = np.float64((T_norm / (1 - T_norm)) * np.linalg.norm(x - x_k))
     return x

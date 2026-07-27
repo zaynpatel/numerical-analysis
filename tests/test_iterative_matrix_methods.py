@@ -8,3 +8,12 @@ def test_check_strict_diagonal_dominance():
                   [-1, 2, 4]], dtype=float)
     r = imm.check_strict_diagonal_dominance(A)
     assert r == False
+
+
+def test_jacobi_method():
+    A = np.array([[7, 3, 1],
+                  [-3, 10, 2],
+                  [1, 7, -15]], dtype=float)
+    b = np.array([[3], [4], [2]], dtype=float)
+    r = imm.jacobi_method(A, b)
+    assert np.allclose(r, np.linalg.solve(A, b))
