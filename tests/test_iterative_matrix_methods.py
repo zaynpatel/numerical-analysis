@@ -17,3 +17,31 @@ def test_jacobi_method():
     b = np.array([[3], [4], [2]], dtype=float)
     r = imm.jacobi_method(A, b)
     assert np.allclose(r, np.linalg.solve(A, b))
+
+
+def test_gauss_seidel_method():
+    A = np.array([[7, 3, 1],
+                  [-3, 10, 2],
+                  [1, 7, -15]], dtype=float)
+    b = np.array([[3], [4], [2]], dtype=float)
+    r = imm.gauss_seidel_method(A, b)
+    assert np.allclose(r, np.linalg.solve(A, b))
+
+
+def test_gauss_seidel_red_black():
+    A = np.array([[7, 3, 1],
+                  [-3, 10, 2],
+                  [1, 7, -15]], dtype=float)
+    b = np.array([[3], [4], [2]], dtype=float)
+    r = imm.gauss_seidel_red_black(A, b)
+    assert np.allclose(r, np.linalg.solve(A, b))
+
+
+def test_gauss_seidel_sor():
+    A = np.array([[7, 3, 1],
+                  [-3, 10, 2],
+                  [1, 7, -15]], dtype=float)
+    b = np.array([[3], [4], [2]], dtype=float)
+    omega = 2 / (1 + np.sin(np.pi * (1/16)))
+    r = imm.gauss_seidel_sor(A, b, omega=omega)
+    assert np.allclose(r, np.linalg.solve(A, b))

@@ -9,6 +9,14 @@ def test_confirm_column_vector():
     assert np.allclose(r, np.array([[3], [0], [1]]))
 
 
+def test_export_lower_triangular():
+    A = np.array([[3, 4, 2],
+                  [1, 4, 2],
+                  [9, 8, 2]], dtype=float)
+    r = dmm.export_lower_triangular(A)
+    assert np.allclose(r, np.tril(A))
+
+
 def test_spd_true():
     A = np.array([[3, -1, 1],
               [-1, 3, 1],
