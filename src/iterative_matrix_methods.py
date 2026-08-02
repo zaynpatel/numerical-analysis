@@ -73,6 +73,14 @@ def check_A(A: npt.NDArray) -> None:
     strict_diagonal_dominance = check_strict_diagonal_dominance(A)
     if not strict_diagonal_dominance:
         raise Exception("Jacobi method on the input matrix A does not converge")
+    
+
+def inner(v1: npt.NDArray, v2: npt.NDArray) -> np.float64:
+    """Compute the inner product of two column vectors and return a scalar"""
+    m, n = v1.shape
+    if n != 1:
+        raise Exception("v1 needs to be a column vector")
+    return (v1.T @ v2)[0][0]
 
 
 def jacobi_method(A: npt.NDArray, b: npt.NDArray, tol=1e-15) -> npt.NDArray:
@@ -218,7 +226,7 @@ def gauss_seidel_sor(A: npt.NDArray, b: npt.NDArray, omega=1.5, tol=1e-14):
     :type omega: float | function
     :param tol: Permissible error tolerance, default is 1e-14 (Note: Setting it to 1e-15 or greater results in an infinite loop)
     :type tol: float
-    :raises Exception: If A is not square, if A has a zero (or more) diagonal entries, if the matrix is not diagonally dominant, if omega is greater than zero
+    :raises Exception: If A is not square, if A has a zero (or more) diagonal entries, if the matrix is not diagonally dominant, if omega is less than zero
     :return: Solution vector x
     :rtype: np.array
     """
@@ -244,4 +252,45 @@ def gauss_seidel_sor(A: npt.NDArray, b: npt.NDArray, omega=1.5, tol=1e-14):
                     j_gt_i.append(A[row_idx, col_idx] * x_k[col_idx])
             x[row_idx, 0] = ((1 - omega) * x_k[row_idx, 0]) + ((omega / A[row_idx, row_idx]) * (b[row_idx, 0] - np.sum(j_lt_i) - np.sum(j_gt_i)))
         computed_difference = np.float64((T_norm / (1 - T_norm)) * np.linalg.norm(x - x_k))
+    return x
+
+
+def conjugate_gradient(A: npt.NDArray, b: npt.NDArray, tol=1e-14) -> npt.NDArray:
+    """
+    Compute a solution to Ax=b using the conjugate gradient method
+
+    :param A: Input matrix A
+    :type A: np.array
+    :param b: Column vector b
+    :type b: np.array
+    :param tol: Permissible error tolerance, default is 1e-14
+    :type tol: float
+    :raises Exception: If A is not symmetric positive definite
+    :return: Solution vector x
+    :rtype: np.array
+    """
+    if not dmm.is_spd(A):
+        raise Exception("Input matrix needs to be symmetric positive definite")
+    _, n = A.shape
+
+    x = np.zeros((n, 1))
+    r = b - (A @ x)
+    r_0 = b - (A @ x)
+    p = r_0
+    delta = inner(r, r)
+    b_delta = inner(b, b)
+
+    k = 0
+    while delta > (tol ** 2) * b_delta:
+        delta_k = delta.copy()
+        p_k = p.copy()
+        x_k = x.copy()
+        r_k = r.copy()
+        s = A @ p_k
+        alpha = delta_k / inner(p_k, s)
+        x = x_k + (alpha * p_k)
+        r = r_k - (alpha * s)
+        delta = inner(r, r)
+        p = r + ((delta / delta_k) * p_k)
+        k += 1
     return x

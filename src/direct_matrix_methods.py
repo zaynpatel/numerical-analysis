@@ -44,7 +44,12 @@ def export_lower_triangular(A: npt.NDArray):
 
 
 def is_spd(A: npt.NDArray) -> bool:
-    """Checks if a matrix is symmetric, positive definite"""
+    """
+    Checks if a matrix is symmetric positive definite
+    
+    :return: True if SPD, False if not
+    :rtype: bool
+    """
     if not np.array_equal(A, A.transpose()):
         return False
     eig_vals, _ = np.linalg.eig(A)

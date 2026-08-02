@@ -45,3 +45,14 @@ def test_gauss_seidel_sor():
     omega = 2 / (1 + np.sin(np.pi * (1/16)))
     r = imm.gauss_seidel_sor(A, b, omega=omega)
     assert np.allclose(r, np.linalg.solve(A, b))
+
+
+def test_conjugate_gradient():
+    A = np.array([[7, 3, 1],
+                  [3, 10, 2],
+                  [1, 2, 15]], dtype=float)
+    b = np.array([[28], [31], [22]], dtype=float)
+    r = imm.conjugate_gradient(A, b)
+    print(r)
+    exact_answer = np.array([[3], [2], [1]], dtype=float)
+    assert np.allclose(r, exact_answer)
