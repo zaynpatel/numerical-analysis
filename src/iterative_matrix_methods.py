@@ -286,11 +286,58 @@ def conjugate_gradient(A: npt.NDArray, b: npt.NDArray, tol=1e-14) -> npt.NDArray
         p_k = p.copy()
         x_k = x.copy()
         r_k = r.copy()
+
         s = A @ p_k
         alpha = delta_k / inner(p_k, s)
         x = x_k + (alpha * p_k)
         r = r_k - (alpha * s)
         delta = inner(r, r)
         p = r + ((delta / delta_k) * p_k)
+        k += 1
+    return x
+
+
+def preconditioned_conjugate_gradient(A: npt.NDArray, b: npt.NDArray, tol=1e-14) -> npt.NDArray:
+    """
+    Compute a solution to Ax=b using the preconditioned conjugate gradient method
+
+    :param A: Input matrix A
+    :type A: np.array
+    :param b: Column vector b
+    :type b: np.array
+    :param tol: Permissible error tolerance, default is 1e-14
+    :type tol: float
+    :raises Exception: If A is not symmetric positive definite
+    :return: Solution vector x
+    :rtype: np.array
+    """
+    if not dmm.is_spd(A):
+        raise Exception("Input matrix needs to be symmetric positive definite")
+    _, n = A.shape
+
+    x = np.zeros((n, 1))
+    P = np.diag(np.diag(A))  # Diagonal matrix is the default choice of the preconditioner, for now
+    r = b - (A @ x)
+    r_0 = b - (A @ x)
+    h = np.linalg.inv(P) @ r_0
+    h_0 = np.linalg.inv(P) @ r_0
+    p = h_0
+    delta = inner(r_0, h)
+    b_delta = inner(b, (np.linalg.inv(P) @ b))
+
+    k = 0
+    while delta > (tol ** 2 ) * b_delta:
+        p_k = p.copy()
+        delta_k = delta.copy()
+        x_k = x.copy()
+        r_k = r.copy()
+
+        s = A @ p_k
+        alpha = delta_k / (inner(p_k, s))
+        x = x_k + (alpha * p_k)
+        r = r_k - (alpha * s)
+        h = (np.linalg.inv(P) @ r)
+        delta = inner(r, h)
+        p = h + ((delta / delta_k) * p_k)
         k += 1
     return x
