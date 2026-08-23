@@ -94,7 +94,7 @@ def householder_reflections(A: npt.NDArray):
     A[np.abs(A) <= 1e-14] = 0.0
 
     p = min(m, n)
-    for i in range(p - 1, -1, - 1):
+    for i in range(p - 1, -1, -1):
         Q = Q - (2 * v[:, [i]] @ (v[:, [i]].T @ Q))
     return Q, A, v
 
