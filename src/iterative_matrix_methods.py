@@ -1,4 +1,9 @@
-"""iterative_matrix_methods
+"""Implements algorithms to solve matrices iteratively
+
+Algorithms include:
+- Gauss-Seidel and its variations (red-black, successive over-relaxation)
+- Jacobi method
+- Conjugate gradient and pre-conditioned conjugate gradient method
 """
 import numpy as np
 import numpy.typing as npt
@@ -50,7 +55,7 @@ def spectral_radius(A: npt.NDArray) -> int:
     return np.sqrt(max(np.abs(eig_vals)))
 
 
-def check_A(A: npt.NDArray) -> None:
+def _check_A(A: npt.NDArray) -> None:
     """
     Checks that A:
     
@@ -99,7 +104,7 @@ def jacobi_method(A: npt.NDArray, b: npt.NDArray, tol=1e-15) -> npt.NDArray:
     """
     dmm.confirm_column_vector(b)
     _, n = A.shape
-    check_A(A)
+    _check_A(A)
 
     M = np.diag(np.diag(A))
     x = np.zeros((n, 1))
@@ -134,7 +139,7 @@ def gauss_seidel_method(A: npt.NDArray, b: npt.NDArray, tol=1e-15) -> npt.NDArra
     """
     dmm.confirm_column_vector(b)
     m, n = A.shape
-    check_A(A)
+    _check_A(A)
 
     M = dmm.export_lower_triangular(A)
     x = np.zeros((n, 1))
@@ -176,7 +181,7 @@ def gauss_seidel_red_black(A: npt.NDArray, b: npt.NDArray, tol=1e-15) -> npt.NDA
     """
     dmm.confirm_column_vector(b)
     m, n = A.shape
-    check_A(A)
+    _check_A(A)
 
     M = np.diag(np.diag(A))
     x = np.zeros((n, 1))
@@ -233,7 +238,7 @@ def gauss_seidel_sor(A: npt.NDArray, b: npt.NDArray, omega=1.5, tol=1e-14):
     if omega <= 0:
         raise Exception("Omega is not allowed to be less than zero.")
     m, n = A.shape
-    check_A(A)
+    _check_A(A)
 
     M = dmm.export_lower_triangular(A)
     x = np.zeros((n, 1))

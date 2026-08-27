@@ -39,7 +39,7 @@ def test_hessenberg_matrix_entries():
                   [0, 3, 5, 8],
                   [0, 0, 1, 3]])
     n, _ = A.shape
-    r = dmm.hessenberg_matrix_entries(n)
+    r = dmm._hessenberg_matrix_entries(n)
     assert r == 3.0
 
 

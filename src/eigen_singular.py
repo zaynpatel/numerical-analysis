@@ -1,4 +1,11 @@
-"""eigen_singular
+"""Implements algorithms to find eigenvectors and eigenvalues iteratively
+
+Algorithms include:
+- Power method (find dominant eigenpair)
+- Shift-and-inverse iteration (find closest eigenpair to parameter alpha)
+- Rayleigh quotient iteration (find closest eigenpair to previous eigenvalue)
+- Least squares for rank-deficient matrices
+- QR eigenvalue algorithm
 """
 import numpy as np
 import numpy.typing as npt

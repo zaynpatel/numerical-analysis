@@ -1,4 +1,10 @@
-"""linear_least_squares
+"""Implements algorithms to orthogonalize a matrix into A = QR and use this factorization to solve least squares
+
+Algorithms include:
+- Classical Gram-Schmidt
+- Modified Gram-Schmidt
+- Householder reflections
+- Givens rotatations
 """
 import numpy as np
 import numpy.typing as npt
@@ -22,7 +28,7 @@ def classical_gram_schmidt(A: npt.NDArray):
     A = A.copy()
     m, n = A.shape
     if np.linalg.matrix_rank(A) != n:
-        raise NotImplementedError("classical_gram_schmidt does not have support for rank-deficient matrices")
+        raise NotImplementedError("`classical_gram_schmidt` does not have support for rank-deficient matrices")
     v = np.zeros((m, n))
     Q = np.zeros((m, n))
     R = np.zeros((n, n))
@@ -54,7 +60,7 @@ def modified_gram_schmidt(A: npt.NDArray):
     A = A.copy()
     m, n = A.shape
     if np.linalg.matrix_rank(A) != n:
-        raise NotImplementedError("`modified_gram_schmidt does not have support for rank-deficient matrices`")
+        raise NotImplementedError("`modified_gram_schmidt` does not have support for rank-deficient matrices")
     v = np.zeros((m, n))
     Q = np.zeros((m, n))
     R = np.zeros((n, n))
@@ -99,7 +105,7 @@ def householder_reflections(A: npt.NDArray):
     return Q, A, v
 
 
-def calculate_givens_matrix(column_index: int, row_index: int, matrix: npt.NDArray):
+def _calculate_givens_matrix(column_index: int, row_index: int, matrix: npt.NDArray):
     """
     Helper function for `givens_rotations` to calculate G given the current state of a matrix
 
@@ -143,7 +149,7 @@ def givens_rotations(A: npt.NDArray):
     for col_idx in range(n):
         for row_idx in range(m - 1, -1, -1):
             if row_idx > col_idx and A[row_idx, col_idx] != 0:
-                givens_rotation = calculate_givens_matrix(column_index=col_idx, row_index=row_idx, matrix=A)
+                givens_rotation = _calculate_givens_matrix(column_index=col_idx, row_index=row_idx, matrix=A)
                 A = givens_rotation @ A
                 Q = Q @ givens_rotation.T
     A[np.abs(A) <= 1e-14] = 0.0

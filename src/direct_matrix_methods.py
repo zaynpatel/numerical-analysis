@@ -1,6 +1,9 @@
-"""direct_matrix_methods
+"""Implements algorithms to solve matrices directly
 
-This file contains functions to solve a matrix using direct methods (LU decomposition, Cholesky decomposition, perform back or forward substitution)
+Algorithms include:
+- Gaussian elimination
+- Factoring a matrix A = LU
+- Cholesky factoring a matrix A = LL.T
 """
 import numpy as np
 import numpy.typing as npt
@@ -59,7 +62,7 @@ def is_spd(A: npt.NDArray) -> bool:
     return True
 
 
-def hessenberg_matrix_entries(n: int) -> int:
+def _hessenberg_matrix_entries(n: int) -> int:
     """
     Computes the number of zero entries in an upper Hessenberg matrix
 
