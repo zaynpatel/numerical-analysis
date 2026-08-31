@@ -54,7 +54,7 @@ def newtons_method_systems(f: function, x: list, p: list, max_iter=20, tol=1e-10
 
     :param f: Function that evaluates points
     :type: function
-    :param eval_points: Initial vector of evaluation points
+    :param x: Initial vector of evaluation points
     :type: list
     :param p: Initial vector of direction information
     :type: list
@@ -77,35 +77,88 @@ def newtons_method_systems(f: function, x: list, p: list, max_iter=20, tol=1e-10
         x_k = x_k + p_k
     return x_k
 
-def newtons_method_minimization(phi: function, x_0: list, p: list):
+def newtons_method_minimization(phi: function, x_0: list, p: list, max_iter=20, tol=1e-10):
     """
-    -> You ought to mention that sometimes you will converge to a point but it won't be
-    the minimization point. Instead it might be a saddle point.
+    Computes the minimum using Newton's method for unconstrained minimization
 
-    -> You can also mention a relative error termination criteria instead of needing to
-    use the for loop #TODO: I could implement the termination criteria without needing a
-    while loop condition, that might make the code cleaner too since an if check?
+    Our goal is to minimize a function -- which we call phi -- of n variables. There is
+    a special case of a minimization problem when phi is in "quadratic form." When we
+    minimize this by taking the gradient [1] we get a linear system (Ax=b) and we can solve
+    this using methods from `direct_matrix_methods.py`. But we often encounter cases other
+    than quadratic forms and to solve these we need a Taylor series approximation for
+    several variables:
+    Let x = (x_1, x_2, ..., x_n).T and assume that phi(x) has bounded derivatives up to
+    order at least 3. Then for a direction vector p = (p_1, p_2, ..., p_n).T, the Taylor
+    expansion in each coordinate yields: phi(x + p) = phi(x) + grad(phi(x)).T@p +
+    1/2*p.T@hess(phi(x))@p + O(||p||^3) where grad is the gradient and hess is the Hessian.
+
+    We get the gradient here because we have *one function* of n-variables. This is equivalent
+    to taking the Jacobian of one function. The Hessian appears because we assume bounded
+    derivatives up to order at least 3.
+
+    If we assume that x* is a minimum then the Taylor series approximation gives us
+    phi(x* + p) = phi(x*) + grad(phi(x*)).T@p + 1/2*p.T@hess(phi(x*))@p + O(||p||^3) ≥ phi(x*).
+    The only way that phi(x*) = phi(x*) is if grad(phi(x*)) is zero. Thus a necessary condition
+    is for the gradient to be zero.
+
+    At this point our condition for a minimum is f(x) = grad(phi(x)) = 0 (where x is a vector)
+    and we want to find x. Solving for x involves solving a system of nonlinear equations
+    because the gradient gives us several equations with unknown values for a single function.
+    Thus, we can apply Newton's method for nonlinear systems to this problem. This yields
+    grad(phi(x)) + hess(phi(x))@p = 0. We can rewrite this as hess(phi(x))@p = -grad(phi(x))
+    and solve this linearly.
+
+    Key idea: Newton's method is locally convergent which means that convergence is strongly
+    associated with the initial guess. In `test_nonlinear_optimization:test_newtons_method_minimization`
+    and `test_nonlinear_optimization:test_newtons_method_minimization_saddle_point`
+    two different starting points lead to two different minimums -- one of these is a saddle
+    point and the other is a true minimum. We will need to work with the Hessian
+    to determine whether we are at a true minimum or not.
+
+    [1]: Minimizing a convex quadratic form: 
+    https://math.stackexchange.com/questions/2606391/minimization-of-a-convex-quadratic-form
+
+    :param f: Function that evaluates points
+    :type: function
+    :param x_0: Initial vector of evaluation points
+    :type: list
+    :param p: Initial vector of direction information
+    :type: list
+    :param max_iter: Max number of iterations
+    :type max_iter: int
+    :param tol: Relative error tolerance
+    :type tol: int
+    :return: Approximated minimum point
+    :rtype: list
     """
     x_k = x_0
     p_k = p
-    for _ in range(50):
+    for _ in range(max_iter):
         hes_at_x = hessian(phi, x_k)
         grad_at_x = jacobian(phi, x_k)  # Jacobian for a single function outputs gradient vector
         neg_result = [-1 * r for r in grad_at_x.df]
         p_k = np.linalg.solve(hes_at_x.ddf, neg_result)
+        if np.linalg.norm((x_k + p_k) - x_k) < tol * (1 + np.linalg.norm(x_k + p_k)):
+            return x_k + p_k
         x_k = x_k + p_k
     return x_k
 
-def weak_line_search(phi: function, x: npt.NDArray, p: npt.NDArray, cp=1e-4):
+def weak_line_search(phi: function, x: npt.NDArray, p: npt.NDArray, gc=1e-4):
     """
     Implements a "simple" backtracking algorithm to find an optimal parameter alpha
 
-    -> Explain more about where this comes from, weak strategy is to take decreasing powers of j
-    -> Also, why is this the while condition?
+    :param phi: Function to evaluate points
+    :type phi: function
+    :param x: Vector of points to evaluate
+    :type x: ndarray
+    :param p: Direction vector
+    :type p: ndarray
+    :param gc: Guard constant (used to ensure useful descent steps)
+    :type gc: int
     """
     alpha_k = 1  # start the alpha at some "max" value
     x_k = x
-    while phi(x + (alpha_k * p)) > (phi(x_k) + cp*alpha_k * (inner(jacobian(phi, x_k).df, p))):
+    while phi(x + (alpha_k * p)) > (phi(x_k) + gc*alpha_k * (inner(jacobian(phi, x_k).df, p))):
         alpha_k = (alpha_k) * (1/2)
     return alpha_k
 
@@ -151,22 +204,53 @@ def bfgs_method(phi: function, x_0: npt.NDArray, G_0: npt.NDArray, iter_max=20, 
         G_k = G_k_plus_1
     return x_k_plus_1
 
-def nonlinear_least_squares(phi: function, x_0: npt.NDArray, p_0: npt.NDArray, b: npt.NDArray, iter_max=20, step_size_norm=1e-7):
+def nonlinear_least_squares(g: function, x_0: npt.NDArray, p_0: npt.NDArray, b: npt.NDArray, iter_max=20, step_size_norm=1e-7):
     """
-    Docstring for nonlinear_least_squares
+    Compute the solution of a nonlinear least squares problem using the Gauss-Newton method
 
-    -> Explain why we need to recalculate the Jacobian each time
+    Our goal is to find the solution to a nonlinear least squares problem. Recall from
+    `linear_least_squares:least_squares_calculation` that we can calculate this directly
+    using the normal equations. There, our characterization of the problem was to minimize
+    x in ||Ax - b||.
 
-    [1]: Reference on gradient of the min phi(x):
+    In the literature we write g(x) = Ax and call g(x) the "model function" and it predicts
+    data for each x. g depends nonlinearly on x and this nonlinearity means that we will need
+    the Jacobian matrix to represent how each variable is affected by each equation. [1]
+
+    We can rewrite our problem using this notation as ||g(x) - b||. Further, 
+    it is recommended to rewrite ||g(x) - b|| as min of 1/2||g(x) - b||^2. We call this phi(x). 
+    For clarity, the equation we work with is phi(x) = 1/2||g(x) - b||^2. We work with this equation 
+    because taking derivatives to find the minimum is easier.
+
+    When we compute the minimum [2] we get A(x*).T@(g(x*) - b) = 0 where A(x*) is the Jacobian
+    of x*. This generalizes the normal equations to the case of nonlinear equations. But, this
+    equation we obtain requires us to solve a nonlinear system of n equations since we do not
+    know what values of x* make this zero. We are back to needing Newton's method for systems.
+
+    We return to our original characterization of the problem ||g(x) - b|| and our goal is to
+    approximate g(x_k+1). We can do this using Newton's method: g(x_k+1) = g(x_k) + A(x_k)p_k.
+    This is very similar to the equation from Newton's method for systems. Plugging this into
+    the original characterization we get ||A(x_k)p - (b - g(x_k))|| where (b - g(x_k)) is the
+    residual.
+
+    The normal equations for the norm above are A(x_k).T@(A(x_k))p_k = A(x_k).T(b-g(x_k)). We
+    turn this into a linear solve in the algorithm below.
+
+    We can check that our solution is correct by using the residual.
+
+    [1]: Recall that we are in a least squares problem where m ≥ n. In other words the number of equations is
+    greater than the number of unknowns so we need the Jacobian to represent changes of each equation w.r.t
+    each unknown.
+    [2]: Reference on gradient of the min phi(x):
     https://math.stackexchange.com/questions/3508373/taking-the-gradient-of-f-mathbfx-frac12-mathbfa-mathbfx-ma
     """
     x_k = x_0
     p_k = p_0
     for _ in range(iter_max):
-        jac_at_x = jacobian(phi, x_k)
+        jac_at_x = jacobian(g, x_k)
         jacobian_T = jac_at_x.df.T
         J = jacobian_T @ jac_at_x.df
-        residual = b - phi(x_k)
+        residual = b - g(x_k)
         j = jacobian_T @ residual
         p_k = np.linalg.solve(J, j)
         norm = np.linalg.norm(p_k)
