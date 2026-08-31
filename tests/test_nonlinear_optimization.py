@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.optimize import least_squares, minimize
+from scipy.optimize import minimize
 
 from src import nonlinear_optimization as nlo
 
