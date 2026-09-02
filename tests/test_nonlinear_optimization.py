@@ -47,11 +47,10 @@ def test_bfgs_method():
     def phi(x):
         x1, x2 = x
         return 1/2*((1.5 - x1*(1-x2))**2 + (2.25 - x1*(1-x2**2))**2 + (2.625 - x1*(1-x2**3))**2)
-    x_0 = np.array([[1.3], [0.7]], dtype=float)
-    sp_x_0 = np.array([1.3, 0.7])  # scipy only accepts 1D array
-    res = minimize(phi, sp_x_0, method='BFGS', tol=1e-6)
-    r = nlo.bfgs_method(phi, x_0, np.identity(len(x_0)))  # Outputs 1D array
-    assert np.allclose(r, res.x.reshape(-1, 1))  # Reshape so arrays are the same size for comparison
+    x_0 = np.array([1.3, 0.7], dtype=float)
+    res = minimize(phi, x_0, method='BFGS', tol=1e-6)
+    r = nlo.bfgs_method(phi, x_0, np.identity(len(x_0)))
+    assert np.allclose(r, res.x)
 
 def test_nonlinear_least_squares():
     def phi(x):

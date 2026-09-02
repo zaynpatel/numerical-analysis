@@ -12,9 +12,6 @@ import numpy.typing as npt
 
 from scipy.differentiate import jacobian, hessian
 
-from src.direct_matrix_methods import confirm_column_vector
-from src.iterative_matrix_methods import inner
-
 
 def newtons_method_systems(f: function, x: list, p: list, max_iter=20, tol=1e-10):
     """
@@ -160,7 +157,7 @@ def weak_line_search(phi: function, x: npt.NDArray, p: npt.NDArray, gc=1e-4):
     """
     alpha_k = 1  # start the alpha at some "max" value
     x_k = x
-    while phi(x + (alpha_k * p)) > (phi(x_k) + gc*alpha_k * (inner(jacobian(phi, x_k).df, p))):
+    while phi(x + (alpha_k * p)) > (phi(x_k) + gc*alpha_k * (np.inner(jacobian(phi, x_k).df.T, p))):
         alpha_k = (alpha_k) * (1/2)
     return alpha_k
 
@@ -213,7 +210,6 @@ def bfgs_method(phi: function, x_0: npt.NDArray, G_0: npt.NDArray, max_iter=20, 
     :return: Approximated minimum
     :rtype: ndarray
     """
-    confirm_column_vector(x_0)
     n, _ = G_0.shape
     G_k = G_0
     x_k = x_0
@@ -223,14 +219,14 @@ def bfgs_method(phi: function, x_0: npt.NDArray, G_0: npt.NDArray, max_iter=20, 
         grad_at_x = jacobian(phi, x_k)
         if np.linalg.norm(grad_at_x.df) < grad_err_tol:
             return x_k_plus_1
-        p_k = np.dot(-G_k, grad_at_x.df).reshape(-1, 1)
+        p_k = np.dot(-G_k, grad_at_x.df)
         line_search_alpha = weak_line_search(phi, x_k, p_k)
         x_k_plus_1 = x_k + line_search_alpha*p_k
         w_k = line_search_alpha*p_k
-        y_k = (jacobian(phi, x_k_plus_1).df - grad_at_x.df).reshape(-1, 1)
-        first_rank_one_update = np.identity(n) - (np.outer(w_k, y_k.T) / inner(y_k, w_k))
-        second_rank_one_update = (np.identity(n) - (np.outer(y_k, w_k.T) / inner(y_k, w_k)))
-        addition_at_end = (np.outer(w_k, w_k.T) / inner(y_k, w_k))
+        y_k = (jacobian(phi, x_k_plus_1).df - grad_at_x.df)
+        first_rank_one_update = np.identity(n) - (np.outer(w_k, y_k.T) / np.inner(y_k.T, w_k))
+        second_rank_one_update = (np.identity(n) - (np.outer(y_k, w_k.T) / np.inner(y_k.T, w_k)))
+        addition_at_end = (np.outer(w_k, w_k.T) / np.inner(y_k.T, w_k))
         G_k_plus_1 = (first_rank_one_update @ G_k @ second_rank_one_update) + addition_at_end
         x_k = x_k_plus_1
         G_k = G_k_plus_1
