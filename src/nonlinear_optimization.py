@@ -26,8 +26,8 @@ def newtons_method_systems(f: function, x: list, p: list, max_iter=20, tol=1e-10
     criteria to see if we have converged to a suitable (approximate) answer.
 
     In `root_finding.py` we saw Newton's method for a single-variable nonlinear equation.
-    There, the key ideas was to linearize, locally, which was equivalent to a first order Taylor
-    approximation in one variable. Once we found that first-order approximation we used it
+    There, the key ideas was to linearize locally which was equivalent to a first order Taylor
+    approximation in one variable. Once we found the first-order approximation we used it
     as the guess for the next iterate. The idea will be similar here, construct a first-order 
     Taylor approximation and use this to develop the next iterate.
 
@@ -61,7 +61,7 @@ def newtons_method_systems(f: function, x: list, p: list, max_iter=20, tol=1e-10
     :param max_iter: Max number of iterations
     :type max_iter: int
     :param tol: Relative error tolerance
-    :type tol: int
+    :type tol: float
     :return: Approximated solution vector
     :rtype: list
     """
@@ -127,7 +127,7 @@ def newtons_method_minimization(phi: function, x_0: list, p: list, max_iter=20, 
     :param max_iter: Max number of iterations
     :type max_iter: int
     :param tol: Relative error tolerance
-    :type tol: int
+    :type tol: float
     :return: Approximated minimum point
     :rtype: list
     """
@@ -154,7 +154,9 @@ def weak_line_search(phi: function, x: npt.NDArray, p: npt.NDArray, gc=1e-4):
     :param p: Direction vector
     :type p: ndarray
     :param gc: Guard constant (used to ensure useful descent steps)
-    :type gc: int
+    :type gc: float
+    :return: Alpha value (step size)
+    :rtype: float
     """
     alpha_k = 1  # start the alpha at some "max" value
     x_k = x
@@ -162,24 +164,54 @@ def weak_line_search(phi: function, x: npt.NDArray, p: npt.NDArray, gc=1e-4):
         alpha_k = (alpha_k) * (1/2)
     return alpha_k
 
-def bfgs_method(phi: function, x_0: npt.NDArray, G_0: npt.NDArray, iter_max=20, grad_err_tol=1e-10):
+def bfgs_method(phi: function, x_0: npt.NDArray, G_0: npt.NDArray, max_iter=20, grad_err_tol=1e-10):
     """
-    - Begin with the importance of Quasi-Newton methods for speed and the ability to get to a minimization result
-    but without needing explicit computation of the Hessian matrix (as the Newton methods need)
+    Computes the minimum using the BFGS method
 
-    - Mention that we update the inverse as opposed to computing a B_k and this is computationally simpler
-    here because we use the Sherman-Morrison-Woodbury formula (this was in the SDSU ppt) which is a rank-two update
+    The BFGS method is the most popular Quasi-Newton method. Quasi-Newton methods are a family of methods
+    used to solve unconstrained minimization problems with an approximation of the Hessian. The Hessian
+    is costly to compute and we would like to avoid computing it explicitly if we can.
 
-    - Explain the derivation and how we get terms like `y_k` and `p_k` *and* that the BFGS method makes the rank-two
-    update using information it found from previous gradients and x values (this is the "incorporation of previous data")
+    While the BFGS method is the most popular there are other variants which use similar math/algorithm
+    to the method defined here *but* these methods find different ways to approximate the Hessian. The
+    BFGS method approximates the *inverse* of the Hessian. It does this using the Sherman-Morrison-Woodbury
+    formula to perform rank-two updates on the inverse. This avoids an explicit computation of the inverse
+    which is extremely costly.
 
-    - Explain that we need a line search method to adjust the direction size we are taking towards the minimum
-    This helps us not overshoot and also adjust the scalar here at each instance. You can also mention why the
-    step size changes at each iteration (we are getting closer to min and overshooting again?)
+    The BFGS method is discussed symbolically in [1] but it is useful to explain some parts of it like the
+    step size `p_k`. If we begin with the quadratic form m_k(p) = f_k + grad(f_k.T)p + 1/2*p.T*B_k*p then
+    our goal is to find the value of p_k. We can do this by taking the gradient of m_k(p) w.r.t p.
+    When we do this the first component becomes zero since there is no p, the second component becomes
+    grad(f) since all the p terms are constant and become 1, and the third term is more complicated. To
+    evaluate this we need the product rule since we are taking derivatives of two vectors with p terms.
+    When we perform the product rule we end up with 1/2(B_k@p) + grad(f_k) = 0 and then we solve for p_k.
 
-    - Explain that for SPD B_k we guarantee descent direction because of the inverse energy property
+    Furthermore, [1] mentions that we calculate the new Hessian using a rank-two update from the information
+    we find like `w_k` and `y_k`. This rank-two update allows us to update the matrix inverse using matrix-vector
+    multiplications, incorporating updated information about gradients and search directions without a heavy cost.
 
-    - Briefly discuss the termination criteria
+    Separately, notice the use of a weak line search algorithm in the BFGS method. The purpose of using a line search
+    algorithm in this method is to adjust magnitude of our step size at each iteration to avoid overshooting. For
+    nonlinear problems especially we use adaptive line searches since we are dealing with more complicated geometry.
+
+    Lastly, we use the magnitude of the gradient as the termination criteria because we know we are at a critical point
+    (minimum in this BFGS problem) when grad(f(x)) = 0.
+
+    [1]: BFGS method (Wikipedia): 
+    https://en.wikipedia.org/wiki/Broyden%E2%80%93Fletcher%E2%80%93Goldfarb%E2%80%93Shanno_algorithm#Algorithm
+
+    :param phi: Function to evaluate points
+    :type phi: function
+    :param x_0: Vector of points to evaluate
+    :type x_0: ndarray
+    :param G_0: Initial matrix used in step size calculation
+    :type p_0: ndarray
+    :param max_iter: Max number of iterations
+    :type max_iter: int
+    :param grad_err_tol: Acceptable tolerance on the gradient
+    :type grad_err_tol: float
+    :return: Approximated minimum
+    :rtype: ndarray
     """
     confirm_column_vector(x_0)
     n, _ = G_0.shape
@@ -187,7 +219,7 @@ def bfgs_method(phi: function, x_0: npt.NDArray, G_0: npt.NDArray, iter_max=20, 
     x_k = x_0
     x_k_plus_1 = x_0
     G_k_plus_1 = G_0
-    for _ in range(iter_max):
+    for _ in range(max_iter):
         grad_at_x = jacobian(phi, x_k)
         if np.linalg.norm(grad_at_x.df) < grad_err_tol:
             return x_k_plus_1
@@ -204,7 +236,7 @@ def bfgs_method(phi: function, x_0: npt.NDArray, G_0: npt.NDArray, iter_max=20, 
         G_k = G_k_plus_1
     return x_k_plus_1
 
-def nonlinear_least_squares(g: function, x_0: npt.NDArray, p_0: npt.NDArray, b: npt.NDArray, iter_max=20, step_size_norm=1e-7):
+def nonlinear_least_squares(g: function, x_0: npt.NDArray, p_0: npt.NDArray, b: npt.NDArray, max_iter=20, step_size_norm=1e-7):
     """
     Compute the solution of a nonlinear least squares problem using the Gauss-Newton method
 
@@ -243,10 +275,25 @@ def nonlinear_least_squares(g: function, x_0: npt.NDArray, p_0: npt.NDArray, b: 
     each unknown.
     [2]: Reference on gradient of the min phi(x):
     https://math.stackexchange.com/questions/3508373/taking-the-gradient-of-f-mathbfx-frac12-mathbfa-mathbfx-ma
+
+    :param g: Function to evaluate points
+    :type g: function
+    :param x_0: Vector of points to evaluate
+    :type x_0: ndarray
+    :param p_0: Initial direction vector
+    :type p_0: ndarray
+    :param b: Column vector
+    :type b: ndarray
+    :param max_iter: Max number of iterations
+    :type max_iter: int
+    :param tol: Relative error tolerance
+    :type tol: int
+    :return: Approximated solution
+    :rtype: ndarray
     """
     x_k = x_0
     p_k = p_0
-    for _ in range(iter_max):
+    for _ in range(max_iter):
         jac_at_x = jacobian(g, x_k)
         jacobian_T = jac_at_x.df.T
         J = jacobian_T @ jac_at_x.df
