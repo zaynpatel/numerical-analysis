@@ -7,13 +7,15 @@ Algorithms include:
 - BFGS method
 - Gauss-Newton method for nonlinear least-squares
 """
+from collections.abc import Callable
+
 import numpy as np
 import numpy.typing as npt
 
 from scipy.differentiate import jacobian, hessian
 
 
-def newtons_method_systems(f: function, x: list, p: list, max_iter=20, tol=1e-10):
+def newtons_method_systems(f: Callable, x: list, p: list, max_iter=20, tol=1e-10):
     """
     Computes a solution vector x using Newton's method for nonlinear systems
 
@@ -25,7 +27,7 @@ def newtons_method_systems(f: function, x: list, p: list, max_iter=20, tol=1e-10
     In `root_finding.py` we saw Newton's method for a single-variable nonlinear equation.
     There, the key ideas was to linearize locally which was equivalent to a first order Taylor
     approximation in one variable. Once we found the first-order approximation we used it
-    as the guess for the next iterate. The idea will be similar here, construct a first-order 
+    as the guess for the next iterate. The idea will be similar here, construct a first-order
     Taylor approximation and use this to develop the next iterate.
 
     To do this we need to use the Taylor series for vector functions:
@@ -36,16 +38,16 @@ def newtons_method_systems(f: function, x: list, p: list, max_iter=20, tol=1e-10
     The Jacobian appears in this problem because we have n functions with n unknowns and in each iteration
     we need to account for the change in each function and each variable.
 
-    We write our system of nonlinear equations in similar form to the single, scalar nonlinear equation 
+    We write our system of nonlinear equations in similar form to the single, scalar nonlinear equation
     in root finding. There, we sought a solution x s.t. f(x) = 0 and here we want the same equation but note
     that f and x are vectors. Thus we get f(x_k) + J(x_k)p_k = 0. We rearrange this equation to be:
     J(x_k)p_k = -f(x_k) and we can solve for our only unknown, p_k, using linear solve methods from
     `direct_matrix_methods.py`.
 
-    Key idea: The convergence of Newton's method to a real solution depends on the initial guess. 
+    Key idea: The convergence of Newton's method to a real solution depends on the initial guess.
     Newton's method is good for local problems where the initial guess is close to the final solution.
 
-    A good example of local convergence is shown in `test_nonlinear_optimization:test_newtons_method_systems_first_root` 
+    A good example of local convergence is shown in `test_nonlinear_optimization:test_newtons_method_systems_first_root`
     and `test_nonlinear_optimization:test_newtons_method_systems_second_root`. In this example, two different starting
     points yield two different, correct roots.
 
@@ -74,7 +76,8 @@ def newtons_method_systems(f: function, x: list, p: list, max_iter=20, tol=1e-10
         x_k = x_k + p_k
     raise RuntimeError(f"Failed to converge with starting point: {x} after {max_iter} iterations")
 
-def newtons_method_minimization(phi: function, x_0: list, p: list, max_iter=20, tol=1e-10):
+
+def newtons_method_minimization(phi: Callable, x_0: list, p: list, max_iter=20, tol=1e-10):
     """
     Computes the minimum using Newton's method for unconstrained minimization
 
@@ -112,7 +115,7 @@ def newtons_method_minimization(phi: function, x_0: list, p: list, max_iter=20, 
     point and the other is a true minimum. We will need to work with the Hessian
     to determine whether we are at a true minimum or not.
 
-    [1]: Minimizing a convex quadratic form: 
+    [1]: Minimizing a convex quadratic form:
     https://math.stackexchange.com/questions/2606391/minimization-of-a-convex-quadratic-form
 
     :param f: Function that evaluates points
@@ -140,7 +143,8 @@ def newtons_method_minimization(phi: function, x_0: list, p: list, max_iter=20, 
         x_k = x_k + p_k
     raise RuntimeError(f"Failed to converge with starting point: {x_0} after {max_iter} iterations")
 
-def weak_line_search(phi: function, x: npt.NDArray, p: npt.NDArray, gc=1e-4):
+
+def weak_line_search(phi: Callable, x: npt.NDArray, p: npt.NDArray, gc=1e-4):
     """
     Implements a "simple" backtracking algorithm to find an optimal parameter alpha
 
@@ -161,7 +165,8 @@ def weak_line_search(phi: function, x: npt.NDArray, p: npt.NDArray, gc=1e-4):
         alpha_k = (alpha_k) * (1/2)
     return alpha_k
 
-def bfgs_method(phi: function, x_0: npt.NDArray, G_0: npt.NDArray, max_iter=20, grad_err_tol=1e-10):
+
+def bfgs_method(phi: Callable, x_0: npt.NDArray, G_0: npt.NDArray, max_iter=20, grad_err_tol=1e-10):
     """
     Computes the minimum using the BFGS method
 
@@ -194,7 +199,7 @@ def bfgs_method(phi: function, x_0: npt.NDArray, G_0: npt.NDArray, max_iter=20, 
     Lastly, we use the magnitude of the gradient as the termination criteria because we know we are at a critical point
     (minimum in this BFGS problem) when grad(f(x)) = 0.
 
-    [1]: BFGS method (Wikipedia): 
+    [1]: BFGS method (Wikipedia):
     https://en.wikipedia.org/wiki/Broyden%E2%80%93Fletcher%E2%80%93Goldfarb%E2%80%93Shanno_algorithm#Algorithm
 
     :param phi: Function to evaluate points
@@ -232,7 +237,8 @@ def bfgs_method(phi: function, x_0: npt.NDArray, G_0: npt.NDArray, max_iter=20, 
         G_k = G_k_plus_1
     raise RuntimeError(f"Failed to converge with starting point: {x_0} after {max_iter} iterations")
 
-def nonlinear_least_squares(g: function, x_0: npt.NDArray, p_0: npt.NDArray, b: npt.NDArray, max_iter=20, step_size_norm=1e-7):
+
+def nonlinear_least_squares(g: Callable, x_0: npt.NDArray, p_0: npt.NDArray, b: npt.NDArray, max_iter=20, step_size_norm=1e-7):
     """
     Compute the solution of a nonlinear least squares problem using the Gauss-Newton method
 
@@ -245,9 +251,9 @@ def nonlinear_least_squares(g: function, x_0: npt.NDArray, p_0: npt.NDArray, b: 
     data for each x. g depends nonlinearly on x and this nonlinearity means that we will need
     the Jacobian matrix to represent how each variable is affected by each equation. [1]
 
-    We can rewrite our problem using this notation as ||g(x) - b||. Further, 
-    it is recommended to rewrite ||g(x) - b|| as min of 1/2||g(x) - b||^2. We call this phi(x). 
-    For clarity, the equation we work with is phi(x) = 1/2||g(x) - b||^2. We work with this equation 
+    We can rewrite our problem using this notation as ||g(x) - b||. Further,
+    it is recommended to rewrite ||g(x) - b|| as min of 1/2||g(x) - b||^2. We call this phi(x).
+    For clarity, the equation we work with is phi(x) = 1/2||g(x) - b||^2. We work with this equation
     because taking derivatives to find the minimum is easier.
 
     When we compute the minimum [2] we get A(x*).T@(g(x*) - b) = 0 where A(x*) is the Jacobian

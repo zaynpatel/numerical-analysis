@@ -6,11 +6,12 @@ Algorithms include:
 - Newton's method
 - Secant method
 """
+from collections.abc import Callable
+
 import numpy as np
-import numpy.typing as npt
 
 
-def bisect(func: function, a: float, b: float, atol: float) -> float:
+def bisect(func: Callable, a: float, b: float, atol: float) -> float:
     """
     Computes a root in an interval using the bisection method
 
@@ -61,7 +62,8 @@ def bisect(func: function, a: float, b: float, atol: float) -> float:
             return p
     return p
 
-def fixed_point(g: function, x_0: float, max_iter=20, tol=1e-8):
+
+def fixed_point(g: Callable, x_0: float, max_iter=20, tol=1e-8):
     """
     Compute a root for a scalar continuous function in one variable using
     the fixed point method
@@ -104,9 +106,10 @@ def fixed_point(g: function, x_0: float, max_iter=20, tol=1e-8):
         x_k = g(x_k)
         if np.linalg.norm(x_k - x_k_minus_1) < tol * (1 + np.linalg.norm(x_k)):
             return x_k
-    raise RuntimeError(f"Failed to converge with initial fixed point: {x_0}")  #TODO: except the error and try Newton's method for g and re-run
+    raise RuntimeError(f"Failed to converge with initial fixed point: {x_0}")  # TODO: except the error and try Newton's method for g and re-run
 
-def newtons_method(f: function, f_prime: function, x_0: float, max_iter=20, tol=1e-8):
+
+def newtons_method(f: Callable, f_prime: Callable, x_0: float, max_iter=20, tol=1e-8):
     """
     Compute a root for a scalar differentiable function using Newton's method
 
@@ -145,14 +148,15 @@ def newtons_method(f: function, f_prime: function, x_0: float, max_iter=20, tol=
         x_k = x_k_plus_1
     raise RuntimeError(f"Failed to converge to a soluton with initial guess: {x_0} after {max_iter} iterations")
 
-def secant_method(f: function, x_0: float, x_1: float, max_iter=20, tol=1e-8):
+
+def secant_method(f: Callable, x_0: float, x_1: float, max_iter=20, tol=1e-8):
     """
     Compute a root for a scalar differentiable function using the secant method
 
     The secant method is a variant of Newton's method that uses a finite difference
     to compute the derivative when it is too complicated to solve for. Finite
     difference approximations [1] use the definition of the derivative but with a
-    small finite difference instead of a limit. In the secant method this difference 
+    small finite difference instead of a limit. In the secant method this difference
     is the value of f(x_k) - f(x_k-1).
 
     We calculate the derivative using methods like [1] and plug that into the Newton's
@@ -162,9 +166,9 @@ def secant_method(f: function, x_0: float, x_1: float, max_iter=20, tol=1e-8):
     given function then you need to pass in separate valid initial guesses for x_0 and
     x_1.
 
-    [1]: Finite difference approximations: 
+    [1]: Finite difference approximations:
     https://en.wikipedia.org/wiki/Finite_difference
-    
+
     :param f: Function to find the solution of
     :type f: function
     :param x_0: Initial guess for x

@@ -48,7 +48,7 @@ def test_givens_rotations_first():
     assert np.allclose(A, Q @ R)
     m, _ = A.shape
     assert Q.shape == (m, m)
-    assert dmm.confirm_upper_triangular(R) == True
+    assert dmm.confirm_upper_triangular(R) is True
 
 
 def test_givens_rotations_second():
@@ -59,7 +59,7 @@ def test_givens_rotations_second():
     assert np.allclose(A, Q @ R)
     m, _ = A.shape
     assert Q.shape == (m, m)
-    assert dmm.confirm_upper_triangular(R) == True
+    assert dmm.confirm_upper_triangular(R) is True
 
 
 def test_givens_rotations_third():
@@ -71,7 +71,7 @@ def test_givens_rotations_third():
     assert np.allclose(A, Q @ R)
     m, _ = A.shape
     assert Q.shape == (m, m)
-    assert dmm.confirm_upper_triangular(R) == True
+    assert dmm.confirm_upper_triangular(R) is True
 
 
 def test_linear_least_squares_calculation_explicit():

@@ -19,8 +19,8 @@ def test_export_lower_triangular():
 
 def test_spd_true():
     A = np.array([[3, -1, 1],
-              [-1, 3, 1],
-              [1, 1, 2]], dtype=float)
+                  [-1, 3, 1],
+                  [1, 1, 2]], dtype=float)
     r = dmm.is_spd(A)
     assert r is True
 
@@ -45,8 +45,8 @@ def test_hessenberg_matrix_entries():
 
 def test_back_substitution():
     A = np.array([[2, -4, 6],
-              [0, 2, -2],
-              [0, 0, 3]])
+                  [0, 2, -2],
+                  [0, 0, 3]])
     b = np.array([[8], [1], [9]])
     r = dmm.back_substitution(A, b)
     assert np.allclose(r, [[2], [3.5], [3]])
@@ -54,8 +54,8 @@ def test_back_substitution():
 
 def test_forward_substitution():
     A = np.array([[5, 0, 0],
-              [1, 2, 0],
-              [-1, 3, 2]])
+                  [1, 2, 0],
+                  [-1, 3, 2]])
     b = np.array([[15], [7], [5]])
     r = dmm.forward_substitution(A, b)
     assert np.array_equal(r, [[3], [2], [1]])
@@ -63,8 +63,8 @@ def test_forward_substitution():
 
 def test_cholesky_decomposition():
     A = np.array([[3, -1, 1],
-              [-1, 3, 1],
-              [1, 1, 2]], dtype=float)
+                  [-1, 3, 1],
+                  [1, 1, 2]], dtype=float)
     my_decomp = dmm.cholesky_decomposition(A)
     numpy_decomp = np.linalg.cholesky(A)
     assert np.allclose(my_decomp, numpy_decomp)
@@ -72,8 +72,8 @@ def test_cholesky_decomposition():
 
 def test_efficient_cholesky():
     A = np.array([[3, -1, 1],
-              [-1, 3, 1],
-              [1, 1, 2]], dtype=float)
+                  [-1, 3, 1],
+                  [1, 1, 2]], dtype=float)
     my_decomp = dmm.efficient_cholesky(A)
     numpy_decomp = np.linalg.cholesky(A)
     assert np.allclose(my_decomp, numpy_decomp)
@@ -95,8 +95,8 @@ def test_gaussian_elimination():
 
 def test_gauss_backsub():
     A = np.array([[1, -1, 3],
-                [1, 1, 0],
-                [3, -2, 1]], dtype=float)
+                  [1, 1, 0],
+                  [3, -2, 1]], dtype=float)
     b = np.array([[2], [4], [1]], dtype=float)
     r_A, r_b = dmm.gaussian_elimination(A, b)
     my_x = dmm.back_substitution(r_A, r_b)
@@ -108,11 +108,11 @@ def test_confirm_upper_triangular_is_true():
     A = np.array([[2, 3, 2],
                   [0, 1, 8],
                   [0, 0, 5]])
-    assert dmm.confirm_upper_triangular(A) == True
+    assert dmm.confirm_upper_triangular(A) is True
 
 
 def test_confirm_upper_triangular_is_false():
     A = np.array([[2, 3, 0],
                   [1, 0, 0],
                   [2, 3, 0]])
-    assert dmm.confirm_upper_triangular(A) == False
+    assert dmm.confirm_upper_triangular(A) is False

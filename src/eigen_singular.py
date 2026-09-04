@@ -12,6 +12,7 @@ import numpy.typing as npt
 
 from src import linear_least_squares as lls
 
+
 def _convert_to_upper_hessenberg(A: npt.NDArray) -> npt.NDArray:
     """
     Convert a matrix A into upper Hessenberg form (zeros below the first subdiagonal)
@@ -39,11 +40,12 @@ def _convert_to_upper_hessenberg(A: npt.NDArray) -> npt.NDArray:
     A[np.abs(A) <= 1e-15] = 0.0
     return A
 
+
 def _subdiagonal_close_to_zero(A: npt.NDArray, n: int) -> bool:
     """
     Extract the subdiagonal of a matrix and check if it is close to zero
     If it is then return True, False if it is not.
-    
+
     :param A: Input matrix A
     :type A: ndarray
     :param n: Number of columns in the matrix
@@ -61,6 +63,7 @@ def _subdiagonal_close_to_zero(A: npt.NDArray, n: int) -> bool:
         return True
     return False
 
+
 def power_method(A: npt.NDArray, v0: npt.NDArray, runs: int) -> tuple[float, npt.NDArray]:
     """
     Compute the dominant eigenpair (eigenvalue, eigenvector) using the power method
@@ -77,7 +80,7 @@ def power_method(A: npt.NDArray, v0: npt.NDArray, runs: int) -> tuple[float, npt
     [v_1 + (c_2*λ_2)/(c_1*λ_1) + ... + (c_n*λ_n)/(c_1*λ_1)]. So we get A*x_0 = c_1*λ_1*x_1.
     (e) Next we apply A to x_1 and get an answer of the form c_2*λ_2*x_2. We then apply A to x_2
     and do this until x_k-1. As we are doing the vector x begins to look like:
-    [v_1 + (c_2*λ_2^k)/(c_1*λ_1^k) + ... + (c_n*λ_n^k)/(c_1*λ_1^k)] and the fractions 
+    [v_1 + (c_2*λ_2^k)/(c_1*λ_1^k) + ... + (c_n*λ_n^k)/(c_1*λ_1^k)] and the fractions
     (e.g. (c_2*λ_2^k)/(c_1*λ_1^k)) will decay to zero since λ_1^k >> λ_2^k and λ_1^k >> λ_3^k
     and so on.
     (e) Thus we end up with the equation Ax_k-1 = λ_1*x_1 where λ_1*x_1 is our dominant eigenpair.
@@ -111,19 +114,20 @@ def power_method(A: npt.NDArray, v0: npt.NDArray, runs: int) -> tuple[float, npt
         eig_val = np.dot(v.T, np.dot(A, v))
     return eig_val, v
 
+
 def inverse_iteration(A: npt.NDArray, v0: npt.NDArray, alpha: float):
     """
     Compute an eigenpair, not necessarily dominant, for a matrix A using the shift-and-invert method
 
-    The goal of the shift-and-invert method is to find *an* eigenpair of A. The idea is that we begin 
-    with a matrix A and shift it by a scalar multiple of the identity s.t. (A - αI) is the new matrix. 
-    Note that α is a real number. After shifting the matrix we invert it so our final shifted-and-inverted 
+    The goal of the shift-and-invert method is to find *an* eigenpair of A. The idea is that we begin
+    with a matrix A and shift it by a scalar multiple of the identity s.t. (A - αI) is the new matrix.
+    Note that α is a real number. After shifting the matrix we invert it so our final shifted-and-inverted
     matrix is (A - αI)^-1.
 
     In practice we do not form an explicit inverse because of the computational cost (see [1]). Instead we
     will solve a linear system involving (A - αI). This has the same effect. For example, we want to solve
     for the eigenvector so we do ṽ = (A - αI)^-1*v_k-1. Without the matrix inverse this looks like
-    (A - αI)ṽ = v_k-1. We still obtain ṽ but we do it more accurately and efficiently. 
+    (A - αI)ṽ = v_k-1. We still obtain ṽ but we do it more accurately and efficiently.
     The eigenvalue is obtained by the Rayleigh quotient, using the eigenvector obtained from the linear solve.
 
     This iteration gives an eigenpair closest to the alpha we choose. [2] explains this using the classic
@@ -162,6 +166,7 @@ def inverse_iteration(A: npt.NDArray, v0: npt.NDArray, alpha: float):
     eig_val = eig_val[0][0]
     return eig_val, v
 
+
 def rayleigh_quotient_iteration(A: npt.NDArray, v0: npt.NDArray):
     """
     Compute an eigenpair, not necessarily dominant, for a matrix A using the Rayleigh quotient iteration
@@ -171,7 +176,7 @@ def rayleigh_quotient_iteration(A: npt.NDArray, v0: npt.NDArray):
     This singular change to use the eigenvalue from the previous iteration increases the flops of the method
     since it involves computing a linear solve each time *but* it achieves faster convergence than the inverse
     iteration.
-    
+
     :param A: Input matrix A
     :type A: ndarray
     :param v0: Initial vector guess
@@ -194,10 +199,11 @@ def rayleigh_quotient_iteration(A: npt.NDArray, v0: npt.NDArray):
     eig_val = eig_val[0][0]
     return eig_val, v
 
+
 def svd_least_squares(A: npt.NDArray, b: npt.NDArray) -> npt.NDArray:
     """
     Solve least-squares via the SVD
-    
+
     Note: We use this method for rank-deficient matrices only. If we want to compute least-squares
     for a matrix with full column rank we use the QR decomposition and then solve the system. A QR
     method of solving this is implemented in `linear_least_squares.least_squares_calculation`. High
@@ -217,7 +223,7 @@ def svd_least_squares(A: npt.NDArray, b: npt.NDArray) -> npt.NDArray:
     U, sig, V_t = np.linalg.svd(A)
 
     if (sig[0] / sig[-1]) >= ill_conditioned:  # if condition number is too high
-        r = np.where(sig == np.min(sig[sig > 0]))[0][0]  #TODO: Decide on a better cutoff than the least singular value above zero
+        r = np.where(sig == np.min(sig[sig > 0]))[0][0]  # TODO: Decide on a better cutoff than the least singular value above zero
     else:
         r = np.where(sig == sig[-1])[0][0]
     z = np.dot(U.T, b)
@@ -231,15 +237,16 @@ def svd_least_squares(A: npt.NDArray, b: npt.NDArray) -> npt.NDArray:
     x = np.dot(V_t.T, np_y)
     return x
 
+
 def qr_eigenvalue_method(A: npt.NDArray):
     """
     Finds *all* eigenvalues of a matrix A by the QR eigenvalue method
 
     We perform the QR eigenvalue algorithm in two steps. The first step is to reduce the matrix
-    to upper Hessenberg form. This is because the second step involves QR factorizations and it 
+    to upper Hessenberg form. This is because the second step involves QR factorizations and it
     is computationally faster to do this with an upper Hessenberg matrix as opposed to a dense A
-    matrix. The second step factors A into QR then constructs RQ and does this continuously until 
-    we have an upper triangular matrix. Upper triangular matrices are special because all the eigenvalues 
+    matrix. The second step factors A into QR then constructs RQ and does this continuously until
+    we have an upper triangular matrix. Upper triangular matrices are special because all the eigenvalues
     sit on the diagonal.
 
     The convergence of the QR eigenvalue method is "related to the rate of decay of the subdiagonal entries
@@ -263,6 +270,7 @@ def qr_eigenvalue_method(A: npt.NDArray):
         A = R @ Q
     eigs = np.diag(A)
     return eigs
+
 
 def efficient_qr_eigenvalue_method(A: npt.NDArray, alpha=0.5):
     """

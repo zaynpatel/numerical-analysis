@@ -3,6 +3,7 @@ from scipy.linalg import hessenberg
 
 from src import eigen_singular as es
 
+
 def test_power_method():
     n = 8
     runs = 20
@@ -21,14 +22,14 @@ def test_power_method():
         np.allclose(es_evec, - np_dominant_evec.reshape(8, 1))
     )
 
+
 def test_inverse_iteration():
     n = 4
     alpha = 1
-    A = np.array([
-    [4, 2, 0, 0],
-    [2, 3, 1, 0],
-    [0, 1, 2, 1],
-    [0, 0, 1, 1]])
+    A = np.array([[4, 2, 0, 0],
+                  [2, 3, 1, 0],
+                  [0, 1, 2, 1],
+                  [0, 0, 1, 1]])
     v0 = np.array([[1], [0.5], [0.3], [0.2]])
 
     es_eval, es_evec = es.inverse_iteration(A, v0, alpha)
@@ -45,13 +46,13 @@ def test_inverse_iteration():
         np.allclose(es_evec, - np_closest_evec.reshape(n, 1), atol=1e-2)
     )
 
+
 def test_rayleigh_quotient_iteration():
     n = 4
-    A = np.array([
-    [4, 2, 0, 0],
-    [2, 3, 1, 0],
-    [0, 1, 2, 1],
-    [0, 0, 1, 1]])
+    A = np.array([[4, 2, 0, 0],
+                  [2, 3, 1, 0],
+                  [0, 1, 2, 1],
+                  [0, 0, 1, 1]])
     v0 = np.array([[1], [0.5], [0.2], [0]])
 
     es_eval, es_evec = es.rayleigh_quotient_iteration(A, v0)
@@ -68,12 +69,13 @@ def test_rayleigh_quotient_iteration():
         np.allclose(es_evec, - np_closest_evec.reshape(n, 1), atol=1e-2)
     )
 
+
 def test_svd_least_squares():
     A = np.array([[4, 4],
-                [1, 1],
-                [9, 9],
-                [4, 4],
-                [-1, -1]], dtype=float)
+                  [1, 1],
+                  [9, 9],
+                  [4, 4],
+                  [-1, -1]], dtype=float)
     b = np.array([[3], [4], [1], [1], [2]], dtype=float)
     es_x = es.svd_least_squares(A, b)
     np_x, _, _, _ = np.linalg.lstsq(A, b)
@@ -82,6 +84,7 @@ def test_svd_least_squares():
         or
         np.allclose(es_x, -np_x)
     )
+
 
 def test_subdiagonal_close_to_zero_false():
     A = np.array([[1, 2, 3, 4],
@@ -92,6 +95,7 @@ def test_subdiagonal_close_to_zero_false():
     r = es._subdiagonal_close_to_zero(A, n)
     assert r is False
 
+
 def test_subdiagonal_close_to_zero_true():
     A = np.array([[1, 2, 3, 4],
                   [0, 1, 3, 5],
@@ -100,6 +104,7 @@ def test_subdiagonal_close_to_zero_true():
     n, _ = A.shape
     r = es._subdiagonal_close_to_zero(A, n)
     assert r is True
+
 
 def test_converts_to_upper_hessenberg():
     A = np.array([[1, 4, 7, 2],
@@ -110,6 +115,7 @@ def test_converts_to_upper_hessenberg():
     scipy_hessenberg = hessenberg(A)
     assert np.allclose(A, scipy_hessenberg)
 
+
 def test_qr_eigenvalue_method():
     A = np.array([[1, 5, 2],
                   [5, 1, 8],
@@ -118,10 +124,11 @@ def test_qr_eigenvalue_method():
     eigs = es.qr_eigenvalue_method(A)
     assert np.allclose(np.sort(eigs), np.sort(evals.real))
 
+
 def test_efficient_qr_eigenvalue_method():
     A = np.array([[1, 5, 2],
-                [5, 1, 8],
-                [2, 8, 3]], dtype=float)
+                  [5, 1, 8],
+                  [2, 8, 3]], dtype=float)
     evals, _ = np.linalg.eig(A)
     eigs = es.efficient_qr_eigenvalue_method(A)
     assert np.allclose(np.sort(eigs), np.sort(evals.real))

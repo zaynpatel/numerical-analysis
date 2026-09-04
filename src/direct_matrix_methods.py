@@ -19,7 +19,7 @@ def confirm_column_vector(b: npt.NDArray):
             return b
         else:
             raise Exception("b is not properly formatted as a column vector")
-        
+
 
 def confirm_upper_triangular(A: npt.NDArray):
     """Confirm a matrix is upper triangular
@@ -49,7 +49,7 @@ def export_lower_triangular(A: npt.NDArray):
 def is_spd(A: npt.NDArray) -> bool:
     """
     Checks if a matrix is symmetric positive definite
-    
+
     :return: True if SPD, False if not
     :rtype: bool
     """
@@ -92,14 +92,14 @@ def back_substitution(A: npt.NDArray, b: npt.NDArray):
         for column_number, _ in enumerate(column):
             if row_number > column_number and A[row_number][column_number] != 0:
                 raise Exception("A is not upper triangular")
-    
+
     confirm_column_vector(b)
     _, n = A.shape
     if A.shape != (n, n):
         raise NotImplementedError("`back_substitution` does not currently work for non-square matrices")
     x = np.zeros((len(b), 1))
     vn, _ = x.shape
-    x[vn - 1] = (b[vn -1] / A[vn -1][vn -1])
+    x[vn - 1] = (b[vn - 1] / A[vn - 1][vn - 1])
     for k in range(n - 2, -1, -1):
         x[k] = (b[k] - A[k][k+1:n] @ x[k+1:n]) / A[k][k]
     return x
@@ -190,7 +190,7 @@ def gaussian_elimination(A: npt.NDArray, b: npt.NDArray):
     eig_vals, _ = np.linalg.eig(A)
     zero_eig_val = np.any(np.isclose(eig_vals.all(), 0))
     if zero_eig_val:
-        raise NotImplementedError(f"`gaussian_elimination` is not implemented for singular matrices")
+        raise NotImplementedError("`gaussian_elimination` is not implemented for singular matrices")
     A = A.copy()
     for column_index in range(n - 1):
         for i in range(column_index + 1, n):

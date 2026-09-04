@@ -11,6 +11,7 @@ import numpy.typing as npt
 
 from src import direct_matrix_methods as dmm
 
+
 def classical_gram_schmidt(A: npt.NDArray):
     """
     Computes A = QR by performing classical Gram-Schmidt (CGS)
@@ -121,7 +122,7 @@ def _calculate_givens_matrix(column_index: int, row_index: int, matrix: npt.NDAr
     k = row_index
     G = np.identity(m)
 
-    c = matrix[column_index, i] / (np.sqrt((matrix[column_index, i]  ** 2) + (matrix[k, column_index] ** 2)))
+    c = matrix[column_index, i] / (np.sqrt((matrix[column_index, i] ** 2) + (matrix[k, column_index] ** 2)))
     s = - (matrix[k, column_index] / (np.sqrt((matrix[column_index, i] ** 2) + (matrix[k, column_index] ** 2))))
     s_negative = - s
     G[i, i] = c

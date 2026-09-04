@@ -14,7 +14,7 @@ from src import direct_matrix_methods as dmm
 def check_zero_diagonal(A: npt.NDArray) -> bool:
     """
     Check if there is a zero on the diagonal of a matrix
-    
+
     :param A: Input matrix A
     :type A: np.array
     :returns: True if there is a zero, False if no zero
@@ -58,7 +58,7 @@ def spectral_radius(A: npt.NDArray) -> int:
 def _check_A(A: npt.NDArray) -> None:
     """
     Checks that A:
-    
+
     (a) is square
     (b) contains no zero diagonal entries
     (c) is strictly diagonally dominant
@@ -78,7 +78,7 @@ def _check_A(A: npt.NDArray) -> None:
     strict_diagonal_dominance = check_strict_diagonal_dominance(A)
     if not strict_diagonal_dominance:
         raise Exception("Jacobi method on the input matrix A does not converge")
-    
+
 
 def inner(v1: npt.NDArray, v2: npt.NDArray) -> np.float64:
     """Compute the inner product of two column vectors and return a scalar"""
@@ -91,7 +91,7 @@ def inner(v1: npt.NDArray, v2: npt.NDArray) -> np.float64:
 def jacobi_method(A: npt.NDArray, b: npt.NDArray, tol=1e-15) -> npt.NDArray:
     """
     Compute a solution to Ax=b using the Jacobi method
-    
+
     :param A: Input matrix A
     :type A: np.array
     :param b: Column vector b
@@ -126,7 +126,7 @@ def jacobi_method(A: npt.NDArray, b: npt.NDArray, tol=1e-15) -> npt.NDArray:
 def gauss_seidel_method(A: npt.NDArray, b: npt.NDArray, tol=1e-15) -> npt.NDArray:
     """
     Compute a solution to Ax=b using the Gauss-Seidel method
-    
+
     :param A: Input matrix A
     :type A: np.array
     :param b: Column vector b
@@ -168,7 +168,7 @@ def gauss_seidel_red_black(A: npt.NDArray, b: npt.NDArray, tol=1e-15) -> npt.NDA
     This method colors each (i, j) point in a matrix red or black. A point is red if i + j is even
     and black if i + j is odd. Then, we iterate over the red points and compute the x_i^(k+1)
     values followed by iteration over the black points and compute the x_i^(k+1) values.
-    
+
     :param A: Input matrix A
     :type A: np.array
     :param b: Column vector b
@@ -212,7 +212,7 @@ def gauss_seidel_sor(A: npt.NDArray, b: npt.NDArray, omega=1.5, tol=1e-14):
     """
     Compute a solution to Ax=b using the Gauss-Seidel method *with* successive over-relaxation (SOR)
 
-    SOR is a technique that introduces a parameter, ω (omega), as a coefficient to a GS update. 
+    SOR is a technique that introduces a parameter, ω (omega), as a coefficient to a GS update.
     This parameter is used to speed up convergence by calculating x_i^(k+1) with a positively
     scaled GS update.
 
@@ -220,7 +220,7 @@ def gauss_seidel_sor(A: npt.NDArray, b: npt.NDArray, omega=1.5, tol=1e-14):
     experimentation is needed to determine which value of ω leads to convergence. It has been shown that
     if ω is between 1 < ω < 2 then faster iteration can be obtained. Note that omega does not need to be
     a specific float value between 1 and 2. For example ω = (2 / 1 + sin(pi*h)) is a valid ω parameter
-    which leads to "rapid" convergence for the A, b in the `test_gauss_seidel_method` from the 
+    which leads to "rapid" convergence for the A, b in the `test_gauss_seidel_method` from the
     tests/test_iterative_matrix_methods.py file. The h in that ω is a constant set to 1/16.
 
     :param A: Input matrix A
@@ -331,7 +331,7 @@ def preconditioned_conjugate_gradient(A: npt.NDArray, b: npt.NDArray, tol=1e-14)
     b_delta = inner(b, (np.linalg.inv(P) @ b))
 
     k = 0
-    while delta > (tol ** 2 ) * b_delta:
+    while delta > (tol ** 2) * b_delta:
         p_k = p.copy()
         delta_k = delta.copy()
         x_k = x.copy()
