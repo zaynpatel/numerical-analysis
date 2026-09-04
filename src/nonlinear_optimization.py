@@ -72,7 +72,7 @@ def newtons_method_systems(f: function, x: list, p: list, max_iter=20, tol=1e-10
         if np.linalg.norm((x_k + p_k) - x_k) < tol * (1 + np.linalg.norm(x_k + p_k)):  # check the relative error
             return x_k + p_k
         x_k = x_k + p_k
-    return x_k
+    raise RuntimeError(f"Failed to converge with starting point: {x} after {max_iter} iterations")
 
 def newtons_method_minimization(phi: function, x_0: list, p: list, max_iter=20, tol=1e-10):
     """
@@ -138,7 +138,7 @@ def newtons_method_minimization(phi: function, x_0: list, p: list, max_iter=20, 
         if np.linalg.norm((x_k + p_k) - x_k) < tol * (1 + np.linalg.norm(x_k + p_k)):
             return x_k + p_k
         x_k = x_k + p_k
-    return x_k
+    raise RuntimeError(f"Failed to converge with starting point: {x_0} after {max_iter} iterations")
 
 def weak_line_search(phi: function, x: npt.NDArray, p: npt.NDArray, gc=1e-4):
     """
@@ -230,7 +230,7 @@ def bfgs_method(phi: function, x_0: npt.NDArray, G_0: npt.NDArray, max_iter=20, 
         G_k_plus_1 = (first_rank_one_update @ G_k @ second_rank_one_update) + addition_at_end
         x_k = x_k_plus_1
         G_k = G_k_plus_1
-    return x_k_plus_1
+    raise RuntimeError(f"Failed to converge with starting point: {x_0} after {max_iter} iterations")
 
 def nonlinear_least_squares(g: function, x_0: npt.NDArray, p_0: npt.NDArray, b: npt.NDArray, max_iter=20, step_size_norm=1e-7):
     """
@@ -300,4 +300,4 @@ def nonlinear_least_squares(g: function, x_0: npt.NDArray, p_0: npt.NDArray, b: 
         if norm < step_size_norm:
             return x_k
         x_k = x_k + p_k
-    return x_k
+    raise RuntimeError(f"Failed to converge with starting point: {x_0} after {max_iter} iterations")
