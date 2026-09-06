@@ -3,7 +3,6 @@
 Algorithms include:
 - Gaussian elimination
 - LU decomposition
-- LU decomposition for banded matrices
 - Cholesky decomposition
 """
 import numpy as np
@@ -74,7 +73,8 @@ def _gaussian_elimination_checks(A: npt.NDArray, m: int, n: int, b: npt.NDArray 
     :param n: Number of columns in A
     :type n: int
     """
-    if b is not None: confirm_column_vector(b)
+    if b is not None:
+        confirm_column_vector(b)
     if m != n:
         raise NotImplementedError("`gaussian_elimination` is not implemented for non-square matrices")
     eig_vals, _ = np.linalg.eig(A)
@@ -232,7 +232,7 @@ def efficient_gaussian_elimination(A: npt.NDArray, b: npt.NDArray):
     _gaussian_elimination_checks(A, m, n, b)
 
     for column_index in range(n - 1):
-        for i in range(column_index + 1 , n):
+        for i in range(column_index + 1, n):
             multiplier = A[i, column_index] / A[column_index, column_index]
             A[i, :] = A[i, :] - multiplier * A[column_index, :]  # Apply the multiplier across all the columns
             b[i] = b[i] - (multiplier * b[column_index])
@@ -273,7 +273,7 @@ def lu_decomposition(A: npt.NDArray) -> npt.NDArray:
     values of b. LU does not rely on any knowledge of b so we can compute it
     once and then run `solve` for many different b's. This is faster than
     recomputing a back or forward substitution for different b's.
-    
+
     :param A: Input matrix A
     :type A: ndarray
     :return: LU matrices

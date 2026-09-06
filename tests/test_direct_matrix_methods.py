@@ -106,6 +106,7 @@ def test_gaussian_elimination():
     assert np.array_equal(r_A, comparison_A)
     assert np.array_equal(r_b, comparison_b)
 
+
 def test_efficient_gaussian_elimination():
     A = np.array([[1, -1, 3],
                   [1, 1, 0],
