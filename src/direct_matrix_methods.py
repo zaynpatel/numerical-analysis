@@ -2,8 +2,9 @@
 
 Algorithms include:
 - Gaussian elimination
-- Factoring a matrix A = LU
-- Cholesky factoring a matrix A = LL.T
+- LU decomposition
+- LU decomposition for banded matrices
+- Cholesky decomposition
 """
 import numpy as np
 import numpy.typing as npt
@@ -60,6 +61,28 @@ def is_spd(A: npt.NDArray) -> bool:
     if zero_eig_val:
         return False
     return True
+
+
+def _gaussian_elimination_checks(A: npt.NDArray, m: int, n: int, b: npt.NDArray = None):
+    """
+    Performs checks on input b, shape and rank of A
+
+    :param b: Column vector b
+    :type b: ndarray
+    :param m: Number of rows in A
+    :type m: int
+    :param n: Number of columns in A
+    :type n: int
+    """
+    if b is not None: confirm_column_vector(b)
+    if m != n:
+        raise NotImplementedError("`gaussian_elimination` is not implemented for non-square matrices")
+    eig_vals, _ = np.linalg.eig(A)
+    zero_eig_val = np.any(np.isclose(eig_vals.all(), 0))
+    if zero_eig_val:
+        raise NotImplementedError("`gaussian_elimination` is not implemented for singular matrices")
+    A = A.copy()
+    return n
 
 
 def _hessenberg_matrix_entries(n: int) -> int:
@@ -178,20 +201,13 @@ def gaussian_elimination(A: npt.NDArray, b: npt.NDArray):
     Perform Gaussian elimination on a matrix A and a vector b
 
     :param A: n x n matrix
-    :type A: np.array
+    :type A: ndarray
     :param b: Column vector b
-    :type b: np.array
+    :type b: ndarray
     :return: Upper triangular matrix and modified column vector
     """
-    confirm_column_vector(b)
     m, n = A.shape
-    if m != n:
-        raise NotImplementedError("`gaussian_elimination` is not implemented for non-square matrices")
-    eig_vals, _ = np.linalg.eig(A)
-    zero_eig_val = np.any(np.isclose(eig_vals.all(), 0))
-    if zero_eig_val:
-        raise NotImplementedError("`gaussian_elimination` is not implemented for singular matrices")
-    A = A.copy()
+    _gaussian_elimination_checks(A, m, n, b)
     for column_index in range(n - 1):
         for i in range(column_index + 1, n):
             multiplier = A[i, column_index] / A[column_index, column_index]
@@ -205,8 +221,88 @@ def efficient_gaussian_elimination(A: npt.NDArray, b: npt.NDArray):
     """
     Perform Gaussian elimination on a matrix A and vector b
     using vectorized operations
-    """
-    # Need to perform checks
 
-    # TODO: Confirm why you need to have a top loop but can vectorize the rest
-    pass
+    :param A: n x n matrix
+    :type A: ndarray
+    :param b: Column vector b
+    :type b: ndarray
+    :return: Upper triangular matrix and modified column vector
+    """
+    m, n = A.shape
+    _gaussian_elimination_checks(A, m, n, b)
+
+    for column_index in range(n - 1):
+        for i in range(column_index + 1 , n):
+            multiplier = A[i, column_index] / A[column_index, column_index]
+            A[i, :] = A[i, :] - multiplier * A[column_index, :]  # Apply the multiplier across all the columns
+            b[i] = b[i] - (multiplier * b[column_index])
+    return A, b
+
+
+def lu_decomposition(A: npt.NDArray) -> npt.NDArray:
+    """
+    Factor A into LU
+
+    There are a few approaches to form A = LU. Some
+    approaches use a chained multiplication of
+    elementary matrices (matrices that include the
+    result of performing one elementary row operation).
+    But this approach is costly because it involves inverting
+    each elementary matrix and multiplying n of those to get
+    L.
+
+    Another approach is to take A and form L by making an
+    identity matrix that has the same dimensions as A (asssuming
+    A is square) and overwritng the entires of A and L to form
+    a lower triangular matrix and an upper triangular matrix. This
+    is the algorithm implemented in this function *but* it is important
+    to note that this is not the most space-efficient. The identity
+    matrix is sparse (O(n) non-zero entries) and for large n the storage
+    is too much.
+
+    Other approaches use the strategy of overwriting A but they do not
+    form an explicit identity matrix. Instead they overwrite A completely
+    and extract the lower and upper triangular parts of A to form LU.
+
+    LU is a useful decomposition to solve linear systems but it is just
+    Gaussian elimination applied to A and placing the row multipliers
+    used there in L. You might wonder why we do not just use back-substitution
+    or forward substitution to solve our problems since these are used
+    in the `solve` algorithm. It is because those algorithms modify b and
+    in real-world systems we would like to solve a system for many different
+    values of b. LU does not rely on any knowledge of b so we can compute it
+    once and then run `solve` for many different b's. This is faster than
+    recomputing a back or forward substitution for different b's.
+    
+    :param A: Input matrix A
+    :type A: ndarray
+    :return: LU matrices
+    :rtype: ndarray
+    """
+    m, n = A.shape
+    _gaussian_elimination_checks(A, m, n)
+    L = np.identity(n)
+
+    for column_index in range(n - 1):
+        for i in range(column_index + 1, n):
+            multiplier = A[i, column_index] / A[column_index, column_index]
+            for j in range(column_index, n):
+                A[i, j] = A[i, j] - (multiplier * A[column_index, j])
+                if i > j:
+                    L[i, j] = multiplier
+    return L, A
+
+
+def lu_solve(A: npt.NDArray, b: npt.NDArray):
+    """
+    Solve a system of equations using LU decomposition
+
+    :param A: Input matrix A
+    :type A: ndarray
+    :param b: Column vector b
+    :type b: ndarray
+    """
+    L, U = lu_decomposition(A)
+    y = forward_substitution(L, b)
+    x = back_substitution(U, y)
+    return x

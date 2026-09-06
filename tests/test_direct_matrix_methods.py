@@ -9,6 +9,20 @@ def test_confirm_column_vector():
     assert np.allclose(r, np.array([[3], [0], [1]]))
 
 
+def test_confirm_upper_triangular_is_true():
+    A = np.array([[2, 3, 2],
+                  [0, 1, 8],
+                  [0, 0, 5]])
+    assert dmm.confirm_upper_triangular(A) is True
+
+
+def test_confirm_upper_triangular_is_false():
+    A = np.array([[2, 3, 0],
+                  [1, 0, 0],
+                  [2, 3, 0]])
+    assert dmm.confirm_upper_triangular(A) is False
+
+
 def test_export_lower_triangular():
     A = np.array([[3, 4, 2],
                   [1, 4, 2],
@@ -92,6 +106,19 @@ def test_gaussian_elimination():
     assert np.array_equal(r_A, comparison_A)
     assert np.array_equal(r_b, comparison_b)
 
+def test_efficient_gaussian_elimination():
+    A = np.array([[1, -1, 3],
+                  [1, 1, 0],
+                  [3, -2, 1]], dtype=float)
+    b = np.array([[2], [4], [1]], dtype=float)
+    r_A, r_b = dmm.efficient_gaussian_elimination(A, b)
+    comparison_A = np.array([[1, -1, 3],
+                             [0, 2, -3],
+                             [0, 0, -6.5]])
+    comparison_b = np.array([[2], [2], [-6]])
+    assert np.array_equal(r_A, comparison_A)
+    assert np.array_equal(r_b, comparison_b)
+
 
 def test_gauss_backsub():
     A = np.array([[1, -1, 3],
@@ -104,15 +131,23 @@ def test_gauss_backsub():
     assert np.allclose(my_x, np_x)
 
 
-def test_confirm_upper_triangular_is_true():
-    A = np.array([[2, 3, 2],
-                  [0, 1, 8],
-                  [0, 0, 5]])
-    assert dmm.confirm_upper_triangular(A) is True
+def test_lu_decomposition():
+    A = np.array([[2, 4, 3, 5],
+                  [-4, -7, -5, -8],
+                  [6, 8, 2, 9],
+                  [4, 9, -2, 14]], dtype=float)
+    comparison_A = A.copy()  # Make a copy since A gets overwritten in function
+    r_L, r_A = dmm.lu_decomposition(A)
+    assert np.allclose(r_L @ r_A, comparison_A)
 
 
-def test_confirm_upper_triangular_is_false():
-    A = np.array([[2, 3, 0],
-                  [1, 0, 0],
-                  [2, 3, 0]])
-    assert dmm.confirm_upper_triangular(A) is False
+def test_lu_solve():
+    A = np.array([[2, 4, 3, 5],
+                  [-4, -7, -5, -8],
+                  [6, 8, 2, 9],
+                  [4, 9, -2, 14]], dtype=float)
+    comparison_A = A.copy()
+    b = np.array([[3], [1], [2], [5]])
+    r = dmm.lu_solve(A, b)
+    np_r = np.linalg.solve(comparison_A, b)
+    assert np.allclose(r, np_r)

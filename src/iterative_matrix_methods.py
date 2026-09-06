@@ -28,6 +28,7 @@ def check_zero_diagonal(A: npt.NDArray) -> bool:
 def check_strict_diagonal_dominance(A: npt.NDArray) -> bool:
     """
     Check if the matrix A is strictly diagonally dominant
+
     Criteria: For each row, if the diagonal entry is *strictly* greater than the
     sum of the other elements in the row (not including the diagonal element)
     it is strictly diagonally dominant.
