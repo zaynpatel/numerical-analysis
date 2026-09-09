@@ -1,4 +1,4 @@
-"""Implements algorithms to solve matrices iteratively
+"""Implements algorithms to solve Ax=b iteratively
 
 Algorithms include:
 - Gauss-Seidel and its variations (red-black, successive over-relaxation)
@@ -274,6 +274,8 @@ def conjugate_gradient(A: npt.NDArray, b: npt.NDArray, tol=1e-14) -> npt.NDArray
     :raises Exception: If A is not symmetric positive definite
     :return: Solution vector x
     :rtype: np.array
+
+    Source: https://www.cs.cmu.edu/~quake-papers/painless-conjugate-gradient.pdf
     """
     if not dmm.is_spd(A):
         raise Exception("Input matrix needs to be symmetric positive definite")

@@ -1,7 +1,8 @@
-"""Implements algorithms to solve matrices directly
+"""Implements algorithms to solve Ax=b directly
 
 Algorithms include:
 - Gaussian elimination
+- Gaussian elimination with partial pivoting
 - LU decomposition
 - Cholesky decomposition
 """
@@ -232,6 +233,65 @@ def efficient_gaussian_elimination(A: npt.NDArray, b: npt.NDArray):
     _gaussian_elimination_checks(A, m, n, b)
 
     for column_index in range(n - 1):
+        for i in range(column_index + 1, n):
+            multiplier = A[i, column_index] / A[column_index, column_index]
+            A[i, :] = A[i, :] - multiplier * A[column_index, :]  # Apply the multiplier across all the columns
+            b[i] = b[i] - (multiplier * b[column_index])
+    return A, b
+
+
+def _pivot(A: npt.NDArray, b: npt.NDArray, idx: int, n: int):
+    """
+    Handles row exchanges during Gaussian elimination
+
+    :param A: Input matrix A
+    :type A: ndarray
+    :param b: Column vector b
+    :type b: ndarray
+    :param idx: Current column index
+    :type idx: int
+    :param n: Number of rows (same as number of columns since GEPP is implemented for square matrices only)
+    :type n: int
+    :return: Pivoted matrix A and vector b
+    :rtype: ndarray
+    """
+    largest_val_index = (np.absolute(A[idx:n, idx])).argmax()  # find the index of the largest absval in column
+    pivot_row = idx + largest_val_index  # adjust index to find row in A
+    A[[idx, pivot_row]] = A[[pivot_row, idx]]  # perform row exchanges on A
+    b[[idx, pivot_row]] = b[[pivot_row, idx]]  # perform exchanges on b
+    return A, b
+
+
+def gepp(A: npt.NDArray, b: npt.NDArray):
+    """
+    Perform Gaussian elimination with partial pivoting
+    on a matrix A and vector b
+
+    The Gaussian elimination process implemented in
+    `gaussian_elimination` can fail if it encounters
+    a pivot value of zero. Furthermore, magnitude differences between
+    rows can cause roundoff problems which may also lead to Gaussian
+    elimination failing.
+
+    Pivoting is a method that prevents these issues. Partial pivoting, specifically,
+    looks at the values, in a given column (from the pivot to the last row) and
+    computes the absolute value of elements in the column and exchanges rows if
+    the highest absolute value is not in the pivot position. This process is
+    performed for every column besides the last.
+
+    Source: https://web.mit.edu/10.001/Web/Course_Notes/GaussElimPivoting.html
+
+    :param A: Input matrix A
+    :type A: ndarray
+    :param b: Column vector b
+    :type b: ndarray
+    :return: Upper triangular matrix, column vector b
+    :rtype: tuple[ndarray, ndarray]
+    """
+    m, n = A.shape
+    _gaussian_elimination_checks(A, m, n, b)
+    for column_index in range(n - 1):
+        A, b = _pivot(A, b, column_index, n)
         for i in range(column_index + 1, n):
             multiplier = A[i, column_index] / A[column_index, column_index]
             A[i, :] = A[i, :] - multiplier * A[column_index, :]  # Apply the multiplier across all the columns

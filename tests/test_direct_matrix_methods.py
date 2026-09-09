@@ -121,6 +121,22 @@ def test_efficient_gaussian_elimination():
     assert np.array_equal(r_b, comparison_b)
 
 
+def test_gepp():
+    A = np.array([[0.02, 0.01, 0, 0],
+                  [1, 2, 1, 0],
+                  [0, 1, 2, 1],
+                  [0, 0, 100, 200]], dtype=float)
+    b = np.array([[0.02], [1], [4], [800]], dtype=float)
+    r_A, r_b = dmm.gepp(A, b)
+    comparison_A = np.array([[1, 2, 1, 0],
+                             [0, 1, 2, 1],
+                             [0, 0, 100, 200],
+                             [0, 0, 0, -0.05]], dtype=float)
+    comparison_b = np.array([[1], [4], [800], [-0.2]], dtype=float)
+    assert np.allclose(r_A, comparison_A)
+    assert np.allclose(r_b, comparison_b)
+
+
 def test_gauss_backsub():
     A = np.array([[1, -1, 3],
                   [1, 1, 0],
